@@ -1,0 +1,1005 @@
+type Application {
+  candidateId: ID!
+  jobId: ID!
+  recruiterId: ID!
+  status: MatchStatus
+  ready: Boolean
+  preferred: Boolean
+  roomId: ID
+  roomToken: String
+  readStatus: Boolean
+  candidate: Candidate!
+  job: Job!
+  moreQuestions: [Video]
+  video: Video
+  profileVideoId: ID
+  profileVideo: Video
+  deleted: Boolean
+  createdAt: String
+  updatedAt: String
+}
+
+type ApplicationConnection {
+  items: [Application]
+  nextToken: String
+}
+
+type Invitation {
+  id: ID!
+  jobId: ID!
+  email: String!
+  candidateId: ID
+  job: Job
+  candidate: Candidate
+  deleted: Boolean
+  createdAt: String
+  updatedAt: String
+}
+
+type InvitationConnection {
+  items: [Invitation]
+  nextToken: String
+}
+
+enum CandidateType {
+  HGC
+  CC
+}
+
+enum Platform {
+  iOS
+  Android
+}
+
+type Candidate implements User {
+  id: ID!
+  username: ID!
+  email: String!
+  firstName: String
+  lastName: String
+  phone: String
+  type: CandidateType
+  zip: String
+  location: String
+  status: Status
+  appStatus: AppStatus
+  onlineTime: String
+  deleted: Boolean
+  createdAt: String
+  updatedAt: String
+  latitude: Float
+  longitude: Float
+  radius: Int
+  resumeIds: [ID]
+  resumes: [Resume]
+  educationId: ID
+  education: Education
+  currentStatusId: ID
+  currentStatus: CurrentStatus
+  salary: String
+  devices: [Device]
+  invitations(first: Int, after: String): InvitationConnection @aws_auth(cognito_groups: ["Candidate", "Admin"])
+  proposals(statuses: [MatchStatus], jobId: ID, first: Int, after: String): ApplicationConnection @aws_auth(cognito_groups: ["Candidate", "Admin"])
+  videos(id: ID, type: VideoType, first: Int, after: String): VideoConnection
+  availableIndustries(first: Int, after: String): IndustryConnection
+  availableWorkTypes(first: Int, after: String): WorkTypeConnection
+  availableCategories(first: Int, after: String): CareerCategoryConnection
+  availableCurrentStatuses(first: Int, after: String): CurrentStatusConnection
+  availableEducations(first: Int, after: String): EducationConnection
+  availableResumes(first: Int, after: String): ResumeConnection
+  industryIds: [ID]
+  industries: [Industry]
+  workTypeIds: [ID]
+  workTypes: [WorkType]
+  experiences(first: Int, after: String): ExperienceConnection
+  careers(first: Int, after: String): CareerConnection
+  jobs(first: Int, after: String): JobConnection
+  onlineRecruiters(statuses: [MatchStatus]): [Recruiter]
+  count(statuses: [MatchStatus]!): Count @aws_auth(cognito_groups: ["Candidate", "Admin"])
+  leadCount: Count @aws_auth(cognito_groups: ["Candidate", "Admin"])
+}
+
+type CurrentStatus {
+  id: ID!
+  value: String
+  status: Boolean
+}
+
+type CurrentStatusConnection {
+  items: [CurrentStatus]
+  nextToken: String
+}
+
+type Education {
+  id: ID!
+  value: String
+  status: Boolean
+}
+
+type EducationConnection {
+  items: [Education]
+  nextToken: String
+}
+
+type Resume {
+  id: ID!
+  value: String
+  status: Boolean
+}
+
+type ResumeConnection {
+  items: [Resume]
+  nextToken: String
+}
+
+type Weight {
+  id: ID!
+  employmentTypeWeight: Int
+  salaryWeight: Int
+  experienceWeight: Int
+  locationWeight: Int
+  candidateId: ID
+  recruiterId: ID
+  createdAt: String
+  updatedAt: String
+}
+
+type WeightConnection {
+  items: [Weight]
+  nextToken: String
+}
+
+input CreateWeightInput {
+  employmentTypeWeight: Int
+  salaryWeight: Int
+  experienceWeight: Int
+  locationWeight: Int
+  candidateId: ID
+  recruiterId: ID
+}
+
+input UpdateWeightInput {
+  id: ID!
+  employmentTypeWeight: Int
+  salaryWeight: Int
+  experienceWeight: Int
+  locationWeight: Int
+  candidateId: ID
+  recruiterId: ID
+}
+
+type Career {
+  id: ID!
+  categoryId: ID!
+  category: CareerCategory
+  experience: String!
+  candidateId: ID!
+  deleted: Boolean
+  createdAt: String
+  updatedAt: String
+}
+
+type Industry {
+  id: ID!
+  value: String
+  status: Boolean
+}
+
+type WorkType {
+  id: ID!
+  value: String
+  status: Boolean
+}
+
+type CareerCategory {
+  id: ID!
+  value: String
+  status: Boolean
+  types: CategoryTypeConnection
+}
+
+type Experience {
+  id: ID!
+  title: String!
+  company: String!
+  isCurrent: Boolean
+  startDate: String
+  endDate: String
+  candidateId: ID!
+  deleted: Boolean
+  createdAt: String
+  updatedAt: String
+}
+
+type CandidateConnection {
+  items: [Candidate]
+  nextToken: String
+}
+
+type IndustryConnection {
+  items: [Industry]
+  nextToken: String
+}
+
+type WorkTypeConnection {
+  items: [WorkType]
+  nextToken: String
+}
+
+type CareerCategoryConnection {
+  items: [CareerCategory]
+  nextToken: String
+}
+
+type CareerConnection {
+  items: [Career]
+  nextToken: String
+}
+
+type ExperienceConnection {
+  items: [Experience]
+  nextToken: String
+}
+
+# input CreateEnumValue {
+#   value: String
+#   status: Boolean
+# }
+
+# input UpdateEnumValue {
+#   id: ID!
+#   value: String
+#   status: Boolean
+# }
+
+# input DeleteEnumValue {
+#   id: ID!
+# }
+
+input CreateCareer {
+  categoryId: ID!
+  experience: String!
+  candidateId: ID!
+}
+
+input UpdateCareer {
+  id: ID!
+  categoryId: ID!
+  experience: String!
+  candidateId: ID!
+  deleted: Boolean
+}
+
+input DeleteCareer {
+  id: ID!
+}
+
+input CreateExperience {
+  title: String!
+  company: String!
+  isCurrent: Boolean
+  startDate: String
+  endDate: String
+  candidateId: ID!
+}
+
+input UpdateExperience {
+  id: ID!
+  title: String!
+  company: String!
+  isCurrent: Boolean
+  startDate: String
+  endDate: String
+  candidateId: ID!
+  deleted: Boolean
+}
+
+input DeleteExperience {
+  id: ID!
+}
+
+input CreateApplicationInput {
+  candidateId: ID!
+  jobId: ID!
+  recruiterId: ID!
+  status: MatchStatus
+  ready: Boolean
+  preferred: Boolean
+  roomId: ID
+  roomToken: String
+  readStatus: Boolean
+  profileVideoId: ID
+}
+
+input CreateJobInput {
+  title: String!
+  description: String
+  duration: String
+  numberOfPositions: String
+  compensation: String
+  zip: String
+  employmentTypeId: ID
+  careerCategoryId: ID
+  categoryTypeId: ID
+  careerExperience: String
+  selling: String
+  toWhom: String
+  salaryTypeId: ID
+  incentiveIds: [ID]
+  benefitIds: [ID]
+  requirementIds: [ID]
+  videoId: ID
+  video: String
+  thumbnail: String
+  videoTitle: String
+  status: JobStatus
+}
+
+input CreateDismatchInput {
+  candidateId: ID!
+  jobId: ID!
+  status: DismatchStatus
+}
+
+# input DeleteDismatchInput {
+#   candidate: ID!
+#   jobId: ID!
+# }
+
+input CreateQuestionInput {
+  question: String!
+  jobId: ID!
+  answer: Boolean
+}
+
+input CreateVideoInput {
+  question: String
+  type: VideoType!
+  video: String
+  title: String
+  thumbnail: String
+  candidateId: ID
+  jobId: ID
+  recruiterId: ID
+}
+
+input DeleteApplicationInput {
+  candidateId: ID!
+  jobId: ID!
+}
+
+# input DeleteCandidateInput {
+#   id: ID!
+# }
+
+input DeleteJobInput {
+  id: ID!
+}
+
+input DeleteQuestionInput {
+  id: ID!
+}
+
+# input DeleteRecruiterInput {
+#   id: ID!
+# }
+
+input DeleteVideoInput {
+  id: ID!
+  type: VideoType!
+}
+
+type Job {
+  id: ID!
+  title: String!
+  description: String
+  zip: String
+  latitude: Float
+  longitude: Float
+  radius: Int
+  location: String
+  duration: String
+  numberOfPositions: String
+  compensation: String
+  employmentTypeId: ID
+  employmentType: WorkType
+  careerCategoryId: ID
+  careerCategory: CareerCategory
+  categoryTypeId: ID
+  categoryType: CategoryType
+  careerExperience: String
+  selling: String
+  toWhom: String
+  salaryTypeId: ID
+  incentiveIds: [ID]
+  benefitIds: [ID]
+  requirementIds: [ID]
+  videoId: ID
+  video: Video
+  status: JobStatus
+  salaryType: SalaryType
+  incentives: [Incentive]
+  benefits: [Benefit]
+  requirements: [Requirement]
+  _score: Float
+  deleted: Boolean
+  createdAt: String
+  updatedAt: String
+  recruiter: Recruiter!
+  applications(statuses: [MatchStatus], candidateId: ID, first: Int, after: String): ApplicationConnection @aws_auth(cognito_groups: ["Recruiter", "Admin"])
+  questions(first: Int, after: String): QuestionConnection
+  invitations(first: Int, after: String): InvitationConnection @aws_auth(cognito_groups: ["Recruiter", "Admin"])
+  recruiterId: ID!
+}
+
+enum JobStatus {
+  Expired
+  Deleted
+  Active
+  Draft
+  Filled
+  Canceled
+}
+
+type CategoryType {
+  id: ID!
+  value: String
+  status: Boolean
+  categoryId: ID!
+  category: CareerCategory
+}
+
+type CategoryTypeConnection {
+  items: [CategoryType]
+  nextToken: String
+}
+
+# input CreateCategoryTypeInput {
+#   value: String
+#   status: Boolean
+#   categoryId: ID!
+# }
+
+# input UpdateCategoryTypeInput {
+#   id: ID!
+#   value: String
+#   status: Boolean
+#   categoryId: ID!
+# }
+
+# input DeleteCategoryTypeInput {
+#   id: ID!
+# }
+
+type SalaryType {
+  id: ID!
+  value: String
+  status: Boolean
+}
+
+type SalaryTypeConnection {
+  items: [SalaryType]
+  nextToken: String
+}
+
+type Incentive {
+  id: ID!
+  value: String
+  status: Boolean
+}
+
+type IncentiveConnection {
+  items: [Incentive]
+  nextToken: String
+}
+
+type Benefit {
+  id: ID!
+  value: String
+  status: Boolean
+}
+
+type BenefitConnection {
+  items: [Benefit]
+  nextToken: String
+}
+
+type Requirement {
+  id: ID!
+  value: String
+  status: Boolean
+}
+
+type RequirementConnection {
+  items: [Requirement]
+  nextToken: String
+}
+
+type Dismatch {
+  candidateId: ID!
+  jobId: ID!
+  status: DismatchStatus
+}
+
+enum DismatchStatus {
+  Disliked
+  Disqualified
+}
+
+type JobConnection {
+  items: [Job]
+  nextToken: String
+}
+
+enum MatchStatus {
+  Pending
+  More
+  Declined
+  Accepted
+  Withdrawn
+  Waiting
+  IsReady
+  ReadyForInterview
+  Interview
+  Interviewing
+  Postponed
+  Missed
+  Interrupted
+  InterviewFinished
+  RecruiterExchanged
+  CandidateExchanged
+  Exchanged
+  NotExchanged
+}
+
+type Mutation {
+  createTestJob(input: CreateJobInput!): Job
+  sendMessage(candidateId: ID!, jobId: ID!, message: String!, alert: String!): Boolean
+  subscribeToLeads: [String] @aws_auth(cognito_groups: ["Candidate"])
+  unsubscribeFromLeads: [String] @aws_auth(cognito_groups: ["Candidate"])
+  ask(jobs: [ID]!): Application @aws_auth(cognito_groups: ["Admin", "Recruiter"])
+  createWeight(input: CreateWeightInput!): Weight @aws_auth(cognito_groups: ["Admin"])
+  updateWeight(input: UpdateWeightInput!): Weight @aws_auth(cognito_groups: ["Admin"])
+  # createRecruiter(input: CreateRecruiterInput!): Recruiter @aws_auth(cognito_groups: ["Admin"])
+  updateRecruiter(input: UpdateRecruiterInput!): Recruiter @aws_auth(cognito_groups: ["Recruiter", "Admin"])
+  updateRecruiterStatus(id: ID!, status: Status!): Recruiter @aws_auth(cognito_groups: ["Recruiter", "Admin"])
+  # deleteRecruiter(input: DeleteRecruiterInput!): Recruiter @aws_auth(cognito_groups: ["Admin"])
+  # createCandidate(input: CreateCandidateInput!): Candidate @aws_auth(cognito_groups: ["Admin"])
+  updateCandidate(input: UpdateCandidateInput!): Candidate @aws_auth(cognito_groups: ["Candidate", "Admin"])
+  updateCandidateStatus(id: ID!, status: Status!): Candidate @aws_auth(cognito_groups: ["Candidate", "Admin"])
+  # deleteCandidate(input: DeleteCandidateInput!): Candidate @aws_auth(cognito_groups: ["Admin"])
+  createJob(input: CreateJobInput!): Job @aws_auth(cognito_groups: ["Recruiter", "Admin"])
+  updateJob(input: UpdateJobInput!): Job @aws_auth(cognito_groups: ["Recruiter", "Admin"])
+  deleteJob(input: DeleteJobInput!): Job @aws_auth(cognito_groups: ["Recruiter", "Admin"])
+  createDismatch(input: CreateDismatchInput!): Dismatch @aws_auth(cognito_groups: ["Candidate", "Admin"])
+  # deleteDismatch(input: DeleteDismatchInput!): Dismatch @aws_auth(cognito_groups: ["Admin"])
+  createApplication(input: CreateApplicationInput!): Application @aws_auth(cognito_groups: ["Candidate", "Admin"])
+  updateApplication(input: UpdateApplicationInput!): Application
+  deleteApplication(input: DeleteApplicationInput!): Application
+  createVideo(input: CreateVideoInput!): Video @aws_auth(cognito_groups: ["Candidate", "Recruiter", "Admin"])
+  updateVideo(input: UpdateVideoInput!): Video @aws_auth(cognito_groups: ["Candidate", "Recruiter", "Admin"])
+  deleteVideo(input: DeleteVideoInput!): Video @aws_auth(cognito_groups: ["Candidate", "Recruiter", "Admin"])
+  createQuestion(input: CreateQuestionInput!): Question @aws_auth(cognito_groups: ["Recruiter", "Admin"])
+  updateQuestion(input: UpdateQuestionInput!): Question @aws_auth(cognito_groups: ["Recruiter", "Admin"])
+  deleteQuestion(input: DeleteQuestionInput!): Question @aws_auth(cognito_groups: ["Recruiter", "Admin"])
+  createCareer(input: CreateCareer!): Career @aws_auth(cognito_groups: ["Admin", "Candidate"])
+  updateCareer(input: UpdateCareer!): Career @aws_auth(cognito_groups: ["Admin", "Candidate"])
+  deleteCareer(input: DeleteCareer!): Career @aws_auth(cognito_groups: ["Admin", "Candidate"])
+  createExperience(input: CreateExperience!): Experience @aws_auth(cognito_groups: ["Admin", "Candidate"])
+  updateExperience(input: UpdateExperience!): Experience @aws_auth(cognito_groups: ["Admin", "Candidate"])
+  deleteExperience(input: DeleteExperience!): Experience @aws_auth(cognito_groups: ["Admin", "Candidate"])
+  # createCategoryType(input: CreateCategoryTypeInput!): CategoryType @aws_auth(cognito_groups: ["Admin"])
+  # updateCategoryType(input: UpdateCategoryTypeInput!): CategoryType @aws_auth(cognito_groups: ["Admin"])
+  # deleteCategoryType(input: DeleteCategoryTypeInput!): CategoryType @aws_auth(cognito_groups: ["Admin"])
+  # createIndustry(input: CreateEnumValue!): Industry @aws_auth(cognito_groups: ["Admin"])
+  # updateIndustry(input: UpdateEnumValue!): Industry @aws_auth(cognito_groups: ["Admin"])
+  # deleteIndustry(input: DeleteEnumValue!): Industry @aws_auth(cognito_groups: ["Admin"])
+  # createWorkType(input: CreateEnumValue!): WorkType @aws_auth(cognito_groups: ["Admin"])
+  # updateWorkType(input: UpdateEnumValue!): WorkType @aws_auth(cognito_groups: ["Admin"])
+  # deleteWorkType(input: DeleteEnumValue!): WorkType @aws_auth(cognito_groups: ["Admin"])
+  # createCareerCategory(input: CreateEnumValue!): CareerCategory @aws_auth(cognito_groups: ["Admin"])
+  # updateCareerCategory(input: UpdateEnumValue!): CareerCategory @aws_auth(cognito_groups: ["Admin"])
+  # deleteCareerCategory(input: DeleteEnumValue!): CareerCategory @aws_auth(cognito_groups: ["Admin"])
+  # createTitle(input: CreateEnumValue!): Title @aws_auth(cognito_groups: ["Admin"])
+  # updateTitle(input: UpdateEnumValue!): Title @aws_auth(cognito_groups: ["Admin"])
+  # deleteTitle(input: DeleteEnumValue!): Title @aws_auth(cognito_groups: ["Admin"])
+  # createSalaryType(input: CreateEnumValue!): SalaryType @aws_auth(cognito_groups: ["Admin"])
+  # updateSalaryType(input: UpdateEnumValue!): SalaryType @aws_auth(cognito_groups: ["Admin"])
+  # deleteSalaryType(input: DeleteEnumValue!): SalaryType @aws_auth(cognito_groups: ["Admin"])
+  # createIncentive(input: CreateEnumValue!): Incentive @aws_auth(cognito_groups: ["Admin"])
+  # updateIncentive(input: UpdateEnumValue!): Incentive @aws_auth(cognito_groups: ["Admin"])
+  # deleteIncentive(input: DeleteEnumValue!): Incentive @aws_auth(cognito_groups: ["Admin"])
+  # createBenefit(input: CreateEnumValue!): Benefit @aws_auth(cognito_groups: ["Admin"])
+  # updateBenefit(input: UpdateEnumValue!): Benefit @aws_auth(cognito_groups: ["Admin"])
+  # deleteBenefit(input: DeleteEnumValue!): Benefit @aws_auth(cognito_groups: ["Admin"])
+  # createRequirement(input: CreateEnumValue!): Requirement @aws_auth(cognito_groups: ["Admin"])
+  # updateRequirement(input: UpdateEnumValue!): Requirement @aws_auth(cognito_groups: ["Admin"])
+  # deleteRequirement(input: DeleteEnumValue!): Requirement @aws_auth(cognito_groups: ["Admin"])
+  # createCurrentStatus(input: CreateEnumValue!): CurrentStatus @aws_auth(cognito_groups: ["Admin"])
+  # updateCurrentStatus(input: UpdateEnumValue!): CurrentStatus @aws_auth(cognito_groups: ["Admin"])
+  # deleteCurrentStatus(input: DeleteEnumValue!): CurrentStatus @aws_auth(cognito_groups: ["Admin"])
+  # createEducation(input: CreateEnumValue!): Education @aws_auth(cognito_groups: ["Admin"])
+  # updateEducation(input: UpdateEnumValue!): Education @aws_auth(cognito_groups: ["Admin"])
+  # deleteEducation(input: DeleteEnumValue!): Education @aws_auth(cognito_groups: ["Admin"])
+  # createResume(input: CreateEnumValue!): Resume @aws_auth(cognito_groups: ["Admin"])
+  # updateResume(input: UpdateEnumValue!): Resume @aws_auth(cognito_groups: ["Admin"])
+  # deleteResume(input: DeleteEnumValue!): Resume @aws_auth(cognito_groups: ["Admin"])
+}
+
+type Query {
+  getRecruiter(id: ID!): Recruiter
+  # listRecruiters(first: Int, after: String): RecruiterConnection @aws_auth(cognito_groups: ["Admin"])
+  getCandidate(id: ID!): Candidate
+  # listCandidates(first: Int, after: String): CandidateConnection @aws_auth(cognito_groups: ["Admin"])
+  getJob(id: ID!): Job
+  listJobs: [Job]
+  # getApplication(candidateId: ID!, jobId: ID!): Application @aws_auth(cognito_groups: ["Admin"])
+  # listApplications(first: Int, after: String): ApplicationConnection @aws_auth(cognito_groups: ["Admin"])
+  listWeights(first: Int, after: String): WeightConnection @aws_auth(cognito_groups: ["Admin"])
+  # getVideo(id: ID!): Video @aws_auth(cognito_groups: ["Admin"])
+  # listVideos(first: Int, after: String): VideoConnection @aws_auth(cognito_groups: ["Admin"])
+  # getQuestion(id: ID!): Question @aws_auth(cognito_groups: ["Admin"])
+  # listQuestions(first: Int, after: String): QuestionConnection @aws_auth(cognito_groups: ["Admin"])
+  # getCareer(id: ID!): Career @aws_auth(cognito_groups: ["Admin"])
+  # listCareers(first: Int, after: String): CareerConnection @aws_auth(cognito_groups: ["Admin"])
+  # getExperience(id: ID!): Experience @aws_auth(cognito_groups: ["Admin"])
+  # listExperiences(first: Int, after: String): ExperienceConnection @aws_auth(cognito_groups: ["Admin"])
+  # getCurrentStatus(id: ID!): CurrentStatus @aws_auth(cognito_groups: ["Admin"])
+  # listCurrentStatuses(first: Int, after: String): CurrentStatusConnection @aws_auth(cognito_groups: ["Admin"])
+  # getEducation(id: ID!): Education @aws_auth(cognito_groups: ["Admin"])
+  # listEducations(first: Int, after: String): EducationConnection @aws_auth(cognito_groups: ["Admin"])
+  # getResume(id: ID!): Resume @aws_auth(cognito_groups: ["Admin"])
+  # listResumes(first: Int, after: String): ResumeConnection @aws_auth(cognito_groups: ["Admin"])
+  # getIndustry(id: ID!): Industry @aws_auth(cognito_groups: ["Admin"])
+  # listIndustries(first: Int, after: String): IndustryConnection @aws_auth(cognito_groups: ["Admin"])
+  # getTitle(id: ID!): Title @aws_auth(cognito_groups: ["Admin"])
+  # listTitles(first: Int, after: String): TitleConnection @aws_auth(cognito_groups: ["Admin"])
+  # getWorkType(id: ID!): WorkType @aws_auth(cognito_groups: ["Admin"])
+  # listWorkTypes(first: Int, after: String): WorkTypeConnection @aws_auth(cognito_groups: ["Admin"])
+  # getCareerCategory(id: ID!): CareerCategory @aws_auth(cognito_groups: ["Admin"])
+  # listCareerCategories(first: Int, after: String): CareerCategoryConnection @aws_auth(cognito_groups: ["Admin"])
+  # getSalaryType(id: ID!): SalaryType @aws_auth(cognito_groups: ["Admin"])
+  # listSalaryTypes(first: Int, after: String): SalaryTypeConnection @aws_auth(cognito_groups: ["Admin"])
+  # getIncentive(id: ID!): Incentive @aws_auth(cognito_groups: ["Admin"])
+  # listIncentives(first: Int, after: String): IncentiveConnection @aws_auth(cognito_groups: ["Admin"])
+  # getBenefit(id: ID!): Benefit @aws_auth(cognito_groups: ["Admin"])
+  # listBenefits(first: Int, after: String): BenefitConnection @aws_auth(cognito_groups: ["Admin"])
+  # getRequirement(id: ID!): Requirement @aws_auth(cognito_groups: ["Admin"])
+  # listRequirements(first: Int, after: String): RequirementConnection @aws_auth(cognito_groups: ["Admin"])
+  # getCategoryType(id: ID!): CategoryType @aws_auth(cognito_groups: ["Admin"])
+  # listCategoryTypes(first: Int, after: String): CategoryTypeConnection @aws_auth(cognito_groups: ["Admin"])
+}
+
+type Question {
+  id: ID!
+  question: String!
+  jobId: ID!
+  answer: Boolean
+  deleted: Boolean
+  createdAt: String
+  updatedAt: String
+}
+
+type QuestionConnection {
+  items: [Question]
+  nextToken: String
+}
+
+type Count {
+  total: Int
+  online: Int
+}
+
+type Recruiter implements User {
+  id: ID!
+  username: ID!
+  email: String!
+  firstName: String
+  lastName: String
+  phone: String
+  zip: String
+  status: Status
+  appStatus: AppStatus
+  onlineTime: String
+  nextOnlineTime: String
+  type: RecruiterType
+  titleId: ID
+  title: Title
+  companyName: String
+  companyPhone: String
+  companyURL: String
+  companyFacebookURL: String
+  companyTwitterURL: String
+  reason: String
+  video: Video
+  moreQuestions: [Video]
+  industryId: ID
+  industry: Industry
+  availableIndustries(first: Int, after: String): IndustryConnection
+  availableTitles(first: Int, after: String): TitleConnection
+  availableCategories(first: Int, after: String): CareerCategoryConnection
+  availableWorkTypes(first: Int, after: String): WorkTypeConnection
+  availableSalaryTypes(first: Int, after: String): SalaryTypeConnection
+  availableIncentives(first: Int, after: String): IncentiveConnection
+  availableBenefits(first: Int, after: String): BenefitConnection
+  availableRequirements(first: Int, after: String): RequirementConnection
+  jobs(jobId: ID, first: Int, after: String, query: String, statuses: [JobStatus]): JobConnection @aws_auth(cognito_groups: ["Recruiter", "Admin"])
+  candidates(first: Int, after: String, query: String!, statuses: [Status]): CandidateConnection @aws_auth(cognito_groups: ["Recruiter", "Admin"])
+  count(statuses: [MatchStatus]!, job: ID): Count @aws_auth(cognito_groups: ["Recruiter", "Admin"])
+  onlineCandidates(statuses: [MatchStatus], jobId: ID): [Candidate]
+  applications(jobId: ID, first: Int, after: String, statuses: [MatchStatus]): ApplicationConnection @aws_auth(cognito_groups: ["Recruiter", "Admin"])
+  numberOfApplications(jobId: ID, statuses: [MatchStatus], jobStatuses: [JobStatus]): Int
+  owner: Recruiter! @aws_auth(cognito_groups: ["Recruiter", "Admin"])
+  agencies(first: Int, after: String): RecruiterConnection @aws_auth(cognito_groups: ["Recruiter", "Admin"])
+  videos(first: Int, after: String): VideoConnection
+  devices: [Device]
+  deleted: Boolean
+  createdAt: String
+  updatedAt: String
+}
+
+type RecruiterConnection {
+  items: [Recruiter]
+  nextToken: String
+}
+
+enum RecruiterType {
+  Company
+  Agency
+}
+
+type Title {
+  id: ID!
+  value: String
+  status: Boolean
+}
+
+type TitleConnection {
+  items: [Title]
+  nextToken: String
+}
+
+# todo: should be excluded in AppSync schema
+directive @aws_subscribe(mutations: [String]) on FIELD_DEFINITION
+
+directive @aws_auth(cognito_groups: [String]) on FIELD_DEFINITION
+
+type Subscription {
+  onAsk(candidateId: ID!, jobId: ID): Application @aws_subscribe(mutations: ["ask"])
+  # onCreateRecruiter(id: ID, username: String, email: String, firstName: String, lastName: String): Recruiter @aws_subscribe(mutations: ["createRecruiter"])
+  onUpdateRecruiterStatus(status: Status): Recruiter @aws_subscribe(mutations: ["updateRecruiterStatus"])
+  # onDeleteRecruiter(id: ID, username: String, email: String, firstName: String, lastName: String): Recruiter @aws_subscribe(mutations: ["deleteRecruiter"])
+  # onCreateCandidate(id: ID, username: String, email: String, firstName: String, lastName: String): Candidate @aws_subscribe(mutations: ["createCandidate"])
+  onUpdateCandidateStatus(status: Status): Candidate @aws_subscribe(mutations: ["updateCandidateStatus"])
+  # onDeleteCandidate(id: ID, username: String, email: String, firstName: String, lastName: String): Candidate @aws_subscribe(mutations: ["deleteCandidate"])
+  # onCreateJob(id: ID, title: String, description: String, location: String, duration: String): Job @aws_subscribe(mutations: ["createJob"])
+  onUpdateJob(id: ID, title: String, description: String, location: String, duration: String): Job @aws_subscribe(mutations: ["updateJob"])
+  # onDeleteJob(id: ID, title: String, description: String, location: String, duration: String): Job @aws_subscribe(mutations: ["deleteJob"])
+  onCreateApplication(candidateId: ID, jobId: ID, status: MatchStatus): Application @aws_subscribe(mutations: ["createApplication"])
+  onUpdateApplication(candidateId: ID, jobId: ID, recruiterId: ID, status: MatchStatus): Application @aws_subscribe(mutations: ["updateApplication"])
+  onDeleteApplication(candidateId: ID, jobId: ID, status: MatchStatus): Application @aws_subscribe(mutations: ["deleteApplication"])
+  # onCreateVideo(id: ID, question: String, url: String): Video @aws_subscribe(mutations: ["createVideo"])
+  # onUpdateVideo(id: ID, question: String, url: String): Video @aws_subscribe(mutations: ["updateVideo"])
+  # onDeleteVideo(id: ID, question: String, url: String): Video @aws_subscribe(mutations: ["deleteVideo"])
+  # onCreateQuestion(id: ID, question: String, answer: String): Question @aws_subscribe(mutations: ["createQuestion"])
+  # onUpdateQuestion(id: ID, question: String, answer: String): Question @aws_subscribe(mutations: ["updateQuestion"])
+  # onDeleteQuestion(id: ID, question: String, answer: String): Question @aws_subscribe(mutations: ["deleteQuestion"])
+  # onCreateExperience(id: ID, title: String, company: String): Experience @aws_subscribe(mutations: ["createExperience"])
+  # onUpdateExperience(id: ID, title: String, company: String): Experience @aws_subscribe(mutations: ["updateExperience"])
+  # onDeleteExperience(id: ID, title: String, company: String): Experience @aws_subscribe(mutations: ["deleteExperience"])
+  # onCreateCareer(id: ID, category: ID, experience: String): Career @aws_subscribe(mutations: ["createCareer"])
+  # onUpdateCareer(id: ID, category: ID, experience: String): Career @aws_subscribe(mutations: ["updateCareer"])
+  # onDeleteCareer(id: ID, category: ID, experience: String): Career @aws_subscribe(mutations: ["deleteCareer"])
+  # onCreateIndustry(id: ID, value: String, status: Boolean): Industry @aws_subscribe(mutations: ["createIndustry"])
+  # onUpdateIndustry(id: ID, value: String, status: Boolean): Industry @aws_subscribe(mutations: ["updateIndustry"])
+  # onDeleteIndustry(id: ID, value: String, status: Boolean): Industry @aws_subscribe(mutations: ["deleteIndustry"])
+  # onCreateWorkType(id: ID, value: String, status: Boolean): WorkType @aws_subscribe(mutations: ["createWorkType"])
+  # onUpdateWorkType(id: ID, value: String, status: Boolean): WorkType @aws_subscribe(mutations: ["updateWorkType"])
+  # onDeleteWorkType(id: ID, value: String, status: Boolean): WorkType @aws_subscribe(mutations: ["deleteWorkType"])
+  # onCreateCareerCategory(id: ID, value: String, status: Boolean): CareerCategory @aws_subscribe(mutations: ["createCareerCategory"])
+  # onUpdateCareerCategory(id: ID, value: String, status: Boolean): CareerCategory @aws_subscribe(mutations: ["updateCareerCategory"])
+  # onDeleteCareerCategory(id: ID, value: String, status: Boolean): CareerCategory @aws_subscribe(mutations: ["deleteCareerCategory"])
+}
+
+input UpdateApplicationInput {
+  candidateId: ID!
+  jobId: ID!
+  recruiterId: ID
+  status: MatchStatus
+  ready: Boolean
+  preferred: Boolean
+  roomId: ID
+  roomToken: String
+  readStatus: Boolean
+  profileVideoId: ID
+  deleted: Boolean
+}
+
+input UpdateCandidateInput {
+  id: ID!
+  username: ID
+  email: String
+  firstName: String
+  lastName: String
+  type: CandidateType
+  phone: String
+  zip: String
+  latitude: Float
+  longitude: Float
+  appStatus: AppStatus
+  radius: Int
+  currentStatusId: ID
+  educationId: ID
+  resumeIds: [ID]
+  salary: String
+  industryIds: [ID]
+  workTypeIds: [ID]
+  platform: Platform
+  deviceToken: String
+  deleted: Boolean
+}
+
+input UpdateJobInput {
+  id: ID!
+  title: String
+  description: String
+  zip: String
+  duration: String
+  numberOfPositions: String
+  compensation: String
+  employmentTypeId: ID
+  careerCategoryId: ID
+  categoryTypeId: ID
+  careerExperience: String
+  selling: String
+  toWhom: String
+  salaryTypeId: ID
+  incentiveIds: [ID]
+  benefitIds: [ID]
+  requirementIds: [ID]
+  videoId: ID
+  video: String
+  thumbnail: String
+  videoTitle: String
+  status: JobStatus
+  deleted: Boolean
+}
+
+input UpdateQuestionInput {
+  id: ID!
+  question: String
+  answer: Boolean
+  deleted: Boolean
+}
+
+input UpdateRecruiterInput {
+  id: ID!
+  username: ID
+  email: String
+  firstName: String
+  lastName: String
+  phone: String
+  zip: String
+  nextOnlineTime: String
+  appStatus: AppStatus
+  titleId: ID
+  type: RecruiterType
+  companyName: String
+  companyPhone: String
+  companyURL: String
+  companyFacebookURL: String
+  companyTwitterURL: String
+  reason: String
+  industryId: ID
+  platform: Platform
+  deviceToken: String
+  deleted: Boolean
+}
+
+input UpdateVideoInput {
+  id: ID!
+  question: String
+  video: String
+  title: String
+  thumbnail: String
+  type: VideoType
+  candidateId: ID
+  jobId: ID
+  recruiterId: ID
+  deleted: Boolean
+}
+
+enum AppStatus {
+  Active
+  Inactive
+}
+
+interface User {
+  id: ID!
+  username: ID!
+  email: String!
+  firstName: String
+  lastName: String
+  phone: String
+  zip: String
+  status: Status
+  appStatus: AppStatus
+  onlineTime: String
+  devices: [Device]
+  deleted: Boolean
+  createdAt: String
+  updatedAt: String
+}
+
+type Device {
+  id: ID!
+  token: String!
+  endpointArn: String!
+  platform: Platform!
+  userId: ID!
+  userType: UserType!
+  deleted: Boolean
+  createdAt: String
+  updatedAt: String
+}
+
+enum UserType {
+  Candidate
+  Recruiter
+}
+
+enum Status {
+  Online
+  Away
+  Offline
+  Invisible
+}
+
+type URL {
+  url: String
+  blur: String
+  thumbnail: String
+}
+
+enum Method {
+  Get
+  Post
+}
+
+type Video {
+  id: ID!
+  type: VideoType!
+  title: String
+  video: String
+  videoURL(method: Method!): URL
+  thumbnail: String
+  thumbnailURL(method: Method!): URL
+  question: String
+  candidateId: ID
+  recruiterId: ID
+  jobId: ID
+  applications(statuses: [MatchStatus], first: Int, after: String): ApplicationConnection @aws_auth(cognito_groups: ["Candidate", "Admin"]) # referencing applications to this video
+  deleted: Boolean
+  createdAt: String
+  updatedAt: String
+}
+
+type VideoConnection {
+  items: [Video]
+  nextToken: String
+}
+
+enum VideoType {
+  ProfileGeneric
+  ProfileSpecific
+  Job
+  Recruiter
+  Application
+  More
+}
+
+schema {
+  query: Query
+  mutation: Mutation
+  subscription: Subscription
+}

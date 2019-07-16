@@ -1,0 +1,38 @@
+{
+  "Records": [
+    {
+      "eventVersion": "2.0",
+      "eventSource": "aws:s3",
+      "awsRegion": "us-west-2",
+      "eventTime": "2018-10-14T09:04:26.606Z",
+      "eventName": "ObjectCreated:Put",
+      "userIdentity": {
+        "principalId": "AWS:AIDAJUXWDCFR4B2OHDKPO"
+      },
+      "requestParameters": {
+        "sourceIPAddress": "103.104.97.126"
+      },
+      "responseElements": {
+        "x-amz-request-id": "A9A25DBBE52D718F",
+        "x-amz-id-2": "zfD0HrDx0Lfk5m9X1F/6D7R7CgY3nmPHqcs7Fz4BTZej+7KBXMfJzfnUPmxnl7OJfJnJeWJmwgc="
+      },
+      "s3": {
+        "s3SchemaVersion": "1.0",
+        "configurationId": "fc6535fc-a40e-42df-adbc-1fd88d8093e7",
+        "bucket": {
+          "name": "hg-can-beta",
+          "ownerIdentity": {
+            "principalId": "A1OF7QN5DPSKIO"
+          },
+          "arn": "arn:aws:s3:::hg-can-beta"
+        },
+        "object": {
+          "key": "img2018accf28dcb-64a/gen/e8dcb34d3d46daf14a84627bf2278590/img_1539507862930.jpg",
+          "size": 8627,
+          "eTag": "3aa48f8c27028d7bd727086a27062acd",
+          "sequencer": "005BC3069A8841A464"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "version": "1",
+  "region": "us-west-2",
+  "userPoolId": "us-west-2_qi18C3Wc9",
+  "userName": "Facebook_2247147428885416",
+  "callerContext": {
+    "awsSdkVersion": "aws-sdk-unknown-unknown",
+    "clientId": "59hhcoofa9ll9fi2us4hvpr30k"
+  },
+  "triggerSource": "PreSignUp_ExternalProvider",
+  "request": {
+    "userAttributes": {
+      "cognito:email_alias": "",
+      "cognito:phone_number_alias": "",
+      "given_name": "Burlakov",
+      "family_name": "Anatoliy",
+      "email": "burlakov3496@mail.ru"
+    },
+    "validationData": {}
+  },
+  "response": {
+    "autoConfirmUser": false,
+    "autoVerifyEmail": false,
+    "autoVerifyPhone": false
+  }
+}

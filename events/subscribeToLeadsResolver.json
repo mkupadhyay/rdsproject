@@ -1,0 +1,26 @@
+{
+  "arguments": {},
+  "source": null,
+  "identity": {
+    "sub": "83861dc9-8f10-417d-b49f-f9c9b880cb51",
+    "issuer": "https://cognito-idp.us-west-2.amazonaws.com/us-west-2_qi18C3Wc9",
+    "username": "83861dc9-8f10-417d-b49f-f9c9b880cb51",
+    "claims": {
+      "sub": "83861dc9-8f10-417d-b49f-f9c9b880cb51",
+      "cognito:groups": ["Candidate"],
+      "event_id": "a024d372-3ea3-11e9-9452-3d83428a1b0c",
+      "token_use": "access",
+      "scope": "aws.cognito.signin.user.admin",
+      "auth_time": 1551720809,
+      "iss": "https://cognito-idp.us-west-2.amazonaws.com/us-west-2_qi18C3Wc9",
+      "exp": 1551724409,
+      "iat": 1551720810,
+      "jti": "e8b22687-d975-4fc7-95eb-7e44e180ada0",
+      "client_id": "59hhcoofa9ll9fi2us4hvpr30k",
+      "username": "83861dc9-8f10-417d-b49f-f9c9b880cb51"
+    },
+    "sourceIp": ["124.29.221.80"],
+    "defaultAuthStrategy": "ALLOW",
+    "groups": ["Candidate"]
+  }
+}

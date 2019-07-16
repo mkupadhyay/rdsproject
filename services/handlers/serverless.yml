@@ -1,0 +1,277 @@
+service: handlers
+
+frameworkVersion: "1.46.1"
+
+provider:
+  name: aws
+  runtime: nodejs8.10
+  region: us-east-1
+  stage: dev
+  memorySize: ${self:custom.memSize.${self:custom.stage}}
+  profile: ams-backend
+  versionFunctions: false
+  environment:
+    AWS_SECRET_STORE_ARN: ${cf:db-${self:custom.stage}.MasterUserSecret}
+    DB_CLUSTER_ARN: ${cf:db-${self:custom.stage}.DBClusterArn}
+    DB_NAME: ${cf:db-${self:custom.stage}.DBName}
+    ORIGIN_BUCKET: ${self:custom.ORIGIN_BUCKET}
+    LOW_BUCKET: ${self:custom.LOW_BUCKET}
+    API_ENDPOINT:
+      Fn::Join:
+        - ""
+        - - https://
+          - Ref: ApiGatewayRestApi
+          - .execute-api.${self:provider.region}.amazonaws.com/${self:custom.stage}
+    ES_ENDPOINT: ${cf:db-${self:custom.stage}.ElasticsearchEndpoint}
+    STAGE: ${self:custom.stage}
+    AWSREGION: ${self:provider.region}
+  apiKeys:
+    - APIKey-${self:custom.stage}
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - secretsmanager:*
+      Resource:
+        - "*"
+    - Effect: "Allow"
+      Action:
+        - rds-data:*
+      Resource:
+        - "*"
+    - Effect: "Allow"
+      Action:
+        - dynamodb:*
+      Resource: "*"
+    - Effect: "Allow"
+      Action:
+        - cognito-idp:*
+      Resource: "*"
+    - Effect: "Allow"
+      Action:
+        - ses:*
+      Resource: "*"
+    - Effect: "Allow"
+      Action:
+        - s3:*
+      Resource:
+        - "arn:aws:s3:::*/*"
+    - Effect: "Allow"
+      Action:
+        - lambda:InvokeFunction
+        - lambda:InvokeAsync
+      Resource: "*"
+    - Effect: "Allow"
+      Action:
+        - es:*
+      Resource:
+        - "*"
+    - Effect: "Allow"
+      Action:
+        - iot:*
+      Resource:
+        - "*"
+    - Effect: "Allow"
+      Action:
+        - sns:*
+      Resource:
+        - "*"
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  CANONICAL_USER: "d6abd2030d5a34fadadf4c47c5d1b06ee87f1b741c845776425f319eae2a3298"
+  ORIGIN_BUCKET: hg4-can-${self:custom.stage}
+  ORIGIN_BUCKET_REF: S3BucketHg1can${self:custom.stage}
+  LOW_BUCKET: hg4-can-low-${self:custom.stage}
+  memSize:
+    dev: 128
+    alpha: 128
+    beta: 128
+    prod: 512
+
+plugins:
+  - serverless-pseudo-parameters
+
+package:
+  exclude:
+    - package-lock.json
+    - package.json
+
+functions:
+  postConfirmation:
+    handler: handler.postConfirmation
+    description: "Post-Confirmation trigger, Put new user item to dynamodb table during sign up via cognito"
+
+  preSignup:
+    handler: handler.preSignup
+    description: "Pre-SignUp trigger, Automatically confirm user"
+
+  resizeImage:
+    handler: resizeImage.handler
+    description: "Resize all uploaded images on the fly"
+    timeout: 30
+    events:
+      - s3: ${self:custom.ORIGIN_BUCKET}
+
+  verifyEmail:
+    handler: email.verify
+    description: "Verify email with confirmed verification code from the client"
+    events:
+      - http:
+          path: email/verify
+          method: get
+          cors: true
+
+  location:
+    handler: location.handler
+    description: "lambda trigger for converting zip code to lat/long"
+    timeout: 30
+    events:
+      - stream:
+          type: dynamodb
+          batchSize: 10
+          startingPosition: LATEST
+          arn: ${cf:db-${self:custom.stage}.CandidateTableStreamArn}
+      - stream:
+          type: dynamodb
+          batchSize: 10
+          startingPosition: LATEST
+          arn: ${cf:db-${self:custom.stage}.JobTableStreamArn}
+
+  job:
+    handler: job.handler
+    description: "lambda trigger for processing attributes of JobTable"
+    timeout: 30
+    events:
+      - stream:
+          type: dynamodb
+          batchSize: 10
+          startingPosition: LATEST
+          arn: ${cf:db-${self:custom.stage}.JobTableStreamArn}
+
+  application:
+    handler: application.handler
+    description: "lambda trigger for processing attributes of ApplicationTable"
+    timeout: 30
+    events:
+      - stream:
+          type: dynamodb
+          batchSize: 10
+          startingPosition: LATEST
+          arn: ${cf:db-${self:custom.stage}.ApplicationTableStreamArn}
+
+  video:
+    handler: video.handler
+    description: "lambda trigger for processing stream of VideoTable"
+    timeout: 30
+    events:
+      - stream:
+          type: dynamodb
+          batchSize: 10
+          startingPosition: LATEST
+          arn: ${cf:db-${self:custom.stage}.VideoTableStreamArn}
+
+  dynamodbToEs:
+    handler: dynamodb-to-es.handler
+    description: "lambda trigger for loading data from DynamoDB to ES"
+    timeout: 30
+    events:
+      - stream:
+          type: dynamodb
+          batchSize: 10
+          startingPosition: LATEST
+          arn: ${cf:db-${self:custom.stage}.ApplicationTableStreamArn}
+      - stream:
+          type: dynamodb
+          batchSize: 10
+          startingPosition: LATEST
+          arn: ${cf:db-${self:custom.stage}.CandidateTableStreamArn}
+      - stream:
+          type: dynamodb
+          batchSize: 10
+          startingPosition: LATEST
+          arn: ${cf:db-${self:custom.stage}.RecruiterTableStreamArn}
+      - stream:
+          type: dynamodb
+          batchSize: 10
+          startingPosition: LATEST
+          arn: ${cf:db-${self:custom.stage}.JobTableStreamArn}
+
+  registerInvitation:
+    handler: invitation.register
+    description: "Register invitation record in DDB"
+    events:
+      - http:
+          path: invitation/register
+          method: post
+          cors: true
+          # private: true
+  fetchJob:
+    handler: fetch-job.handler
+    description: "Fetch the details of job specified by jobId"
+    events:
+      - http:
+          path: job
+          method: get
+          cors: true
+          # private: true
+
+resources:
+  Resources:
+    S3BucketHgcanlow:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:custom.LOW_BUCKET}
+        CorsConfiguration:
+          CorsRules:
+            - AllowedHeaders: ["*"]
+              AllowedOrigins: ["*"]
+              AllowedMethods: ["GET"]
+    S3BucketHgcanlowPolicy:
+      Type: AWS::S3::BucketPolicy
+      DependsOn: S3BucketHgcanlow
+      Properties:
+        Bucket:
+          Ref: S3BucketHgcanlow
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Sid: PublicReadBucket
+              Effect: Allow
+              Principal:
+                CanonicalUser: ${self:custom.CANONICAL_USER}
+              Action:
+                - s3:GetObject
+              Resource:
+                - arn:aws:s3:::${self:custom.LOW_BUCKET}/*
+    S3BucketHgcanPolicy:
+      Type: AWS::S3::BucketPolicy
+      DependsOn: S3BucketHgcanlow
+      Properties:
+        Bucket: ${self:custom.ORIGIN_BUCKET}
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Sid: PublicReadBucket
+              Effect: Allow
+              Principal:
+                CanonicalUser: ${self:custom.CANONICAL_USER}
+              Action:
+                - s3:GetObject
+              Resource:
+                - arn:aws:s3:::${self:custom.ORIGIN_BUCKET}/*
+  Outputs:
+    OriginBucket:
+      Description: "S3 Bucket name for origin bucket: hg-can-*"
+      Value: ${self:custom.ORIGIN_BUCKET}
+      Export:
+        Name: S3BucketHgcan-${self:custom.stage}
+    LowBucket:
+      Description: "S3 Bucket name for low bucket: hg-can-low-*"
+      Value: ${self:custom.LOW_BUCKET}
+      Export:
+        Name: S3BucketHgcanlow-${self:custom.stage}
+    ApiGatewayRestApi:
+      Description: ApiGatewayRestApi
+      Value: { "Ref": "ApiGatewayRestApi" }
+      Export:
+        Name: ApiGatewayRestApi-${self:custom.stage}

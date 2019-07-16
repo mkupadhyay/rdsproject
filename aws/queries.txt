@@ -1,0 +1,331 @@
+# query samples to use in AppSync Query panel
+query ListRecruiters {
+  listRecruiters {
+    items {
+      id
+      status
+      jobs {
+        items {
+          applications {
+            items {
+              candidateId
+              jobId
+              status
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+subscription OnAsk {
+  onAsk(candidateId: "1156820e-7722-4f4f-b2ed-f3d809cf4be6") {
+    jobId
+    candidateId
+    status
+  }
+}
+
+subscription OnCandidatePresence {
+  onUpdateApplication(jobId:"0cb1960b-f8cf-4be8-86f9-768effa89b7f", candidateId: "2f9132d6-e87c-4ebb-9882-dd69dc105285", recruiterId: "25078cab-e3f2-47d7-a54d-3af3e5432b69", status: ReadyForInterview) {
+    candidateId
+    jobId
+    recruiterId
+    candidateStatus
+    status
+  }
+}
+
+subscription OnRecruiterPresence {
+  onUpdateApplication(candidateId: "04490ea2-7b65-491f-92fe-303b91f5084a") {
+    candidateId
+    jobId
+    recruiterId
+    recruiterStatus
+  }
+}
+
+mutation Ask {
+  ask(jobs: ["02e68b05-dc8a-4ce0-899c-c61155f191f7"]) {
+    candidateId
+    jobId
+    recruiterId
+    status
+    job {
+      title
+      recruiter {
+        id
+        companyName
+      }
+    }
+  }
+}
+
+query GetApplication {
+  getApplication(candidateId: "3a796a44-9f6a-400f-b85c-70756806e42c", jobId: "343b7c78-e86a-4617-aff0-070bdfc81aff") {
+    status
+  }
+}
+
+mutation CreateApplication {
+  createApplication(input: {candidateId: "d0f770a1-b465-4185-8426-26c43c0cc5c9", jobId: "eb24de31-8887-4bff-8743-502d09317a93", recruiterId: ""}) {
+    jobId
+    candidateId
+    status
+  }
+}
+
+mutation UpdateApplication {
+  updateApplication(input: {candidateId: "3a796a44-9f6a-400f-b85c-70756806e42c", jobId: "02e68b05-dc8a-4ce0-899c-c61155f191f7", status: Waiting}) {
+    status
+  }
+}
+
+mutation UpdateVideo {
+  updateVideo(input: {id: "d41ac8e1-fd34-4d2f-bca9-648c538e5352", title: "test1"}) {
+    id
+    title
+    type
+  }
+}
+
+query ListVideos {
+  listVideos {
+    items {
+      id
+      title
+      type
+      url
+    }
+  }
+}
+
+query GetRecruiter {
+  getRecruiter(id: "25078cab-e3f2-47d7-a54d-3af3e5432b69") {
+    id
+    onlineCandidates(statuses: [Accepted, Pending, More, Declined, Withdrawn, Waiting, IsReady, ReadyForInterview, Interview, Postponed, Interrupted, InterviewFinished, RecruiterExchanged, CandidateExchanged, NotExchanged]) {
+      id
+      status
+    }
+  }
+}
+
+subscription OnUpdateRecruiter {
+  onUpdateRecruiter(id: "2893bedb-3ed7-4e7e-a7c8-5ab94cafd4c7") {
+    id
+    email
+    status
+  }
+}
+
+mutation UpdateRecruiter {
+  updateRecruiter(input: {id: "04490ea2-7b65-491f-92fe-303b91f5084a", status: Online}) {
+    id
+    status
+  }
+}
+
+mutation DeleteRecruiter { # this mutation shouldn't be used in production
+  deleteRecruiter(input:{id: "577a5726-505a-4ed2-800a-77939ceb6e5b"}) {
+    id
+    email
+  }
+}
+
+query ListCandidates {
+  listCandidates(first: 10) {
+    items {
+      id
+      firstName
+      lastName
+      industries {
+        id
+      }
+      videos(type: ProfileGeneric) {
+        items {
+          title
+          url
+          thumbnail
+          type
+        }
+      }
+      jobs {
+        items {
+          id
+          title
+        }
+        nextToken
+      }
+    }
+    nextToken
+  }
+}
+
+mutation CreateVideo {
+  createVideo(input: {candidateId: "5106808d-1e65-486e-afd8-21e9de4a6f88" title: "title", url: "https://www.youtube.com", type: ProfileGeneric, thumbnail: "https://www.hiregoat.com"}) {
+    id
+  	title
+    url
+    type
+  }
+}
+
+query GetCandidate1 {
+  getCandidate(id: "4600c7ee-f108-4049-aa5d-9ea26382223c") {
+    id
+    email
+    firstName
+    lastName
+    salary
+    # onlineRecruiters(statuses: [Accepted, Pending, More, Declined, Withdrawn, Waiting, IsReady, ReadyForInterview, Interview, Postponed, Interrupted, InterviewFinished, RecruiterExchanged, CandidateExchanged, NotExchanged]) {
+    #   id
+    #   status
+    # }
+    industries {
+      value
+    }
+    workTypes {
+      value
+    }
+    resumes {
+      value
+    }
+    careers {
+      items {
+        category {
+          value
+        }
+        experience
+      }
+    }
+  }
+}
+
+query GetCandidate2 {
+  getCandidate(id: "2f9132d6-e87c-4ebb-9882-dd69dc105285") {
+    id
+    status
+    proposals {
+      items {
+        jobId
+        status
+        readStatus
+      }
+    }
+  }
+}
+
+mutation UpdateCandidate {
+  updateCandidate(input: {id: "3a796a44-9f6a-400f-b85c-70756806e42c", status: Online}) {
+    id
+    status
+  }
+}
+
+mutation DeleteCandidate { # this mutation shouldn't be used in production
+  deleteCandidate(input: {id: "ff3dc0c2-dd1b-4d35-a40c-94d981d1fb4c"}) {
+    id
+    email
+  }
+}
+
+query GetJob {
+  getJob(id: "0902eda2-da03-4671-bcbe-8c18748a260d") {
+    id
+    title
+    recruiterId
+    applications(statuses:[Waiting, IsReady]) {
+      items {
+        candidateId
+        jobId
+        recruiterId
+        status
+      }
+    }
+  }
+}
+
+query ListJobs {
+  listJobs {
+    items {
+      id
+      title
+      recruiter {
+      	id
+  			companyName
+      }
+      questions {
+        items {
+          id
+          question
+        }
+      }
+      applications {
+        items {
+          candidate {
+            id
+            firstName
+            lastName
+          }
+          status
+          ready
+          createdAt
+        }
+      }
+    }
+  }
+}
+
+mutation UpdateQuestion {
+  updateQuestion(input: {id: "b813afed-ea15-440c-a5b0-f42de25a185c", question: "test"}) {
+    id
+    question
+  }
+}
+
+query ListMores {
+  listMores {
+    items {
+      id
+    }
+  }
+}
+
+query MatchedJobs {
+  getCandidate(id: "00aa812f-e5f3-44cf-bdb5-3626dde84bf6") {
+    industries {
+      id
+    }
+    careers {
+      items {
+        categoryId
+        experience
+      }
+    }
+    workTypes {
+      id
+    }
+    salary
+    radius
+    latitude
+    longitude
+    jobs {
+      items {
+        id
+        _score
+        status
+        title
+        recruiter {
+          industryId
+        }
+        careerCategoryId
+        careerExperience
+        compensation
+        employmentTypeId
+        latitude
+        longitude
+      }
+    }
+  }
+}

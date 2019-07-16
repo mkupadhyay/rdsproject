@@ -1,0 +1,11 @@
+{
+  "field": "createCareer",
+  "arguments": {
+    "input": {
+      "categoryId": "a15dafc2-b29f-4103-8fed-0a9cefec8380",
+      "experience": "0-3",
+      "candidateId": "2d855f2b-24f3-4c79-84f8-ddb8f86f5503"
+    }
+  },
+  "source": null
+}

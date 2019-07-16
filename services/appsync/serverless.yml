@@ -1,0 +1,1504 @@
+service: appsync
+
+frameworkVersion: "1.46.1"
+
+provider:
+  name: aws
+  runtime: nodejs8.10
+  region: us-east-1
+  stage: dev
+  memorySize: ${self:custom.memSize.${self:custom.stage}}
+  profile: ams-backend
+  # profile: fliphire
+  versionFunctions: false
+  environment:
+    AWS_SECRET_STORE_ARN: ${cf:db-${self:custom.stage}.MasterUserSecret}
+    DB_CLUSTER_ARN: ${cf:db-${self:custom.stage}.DBClusterArn}
+    DB_NAME: ${cf:db-${self:custom.stage}.DBName}
+    ORIGIN_BUCKET: ${cf:handlers-${self:custom.stage}.OriginBucket}
+    LOW_BUCKET: ${cf:handlers-${self:custom.stage}.LowBucket}
+    STAGE: ${self:custom.stage}
+    AWSREGION: ${self:provider.region}
+    ES_ENDPOINT: ${cf:db-${self:custom.stage}.ElasticsearchEndpoint}
+
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - secretsmanager:*
+      Resource:
+        - "*"
+    - Effect: "Allow"
+      Action:
+        - rds-data:*
+      Resource:
+        - "*"
+    - Effect: "Allow"
+      Action:
+        - dynamodb:*
+      Resource: "*"
+    - Effect: "Allow"
+      Action:
+        - es:*
+      Resource:
+        - "*"
+    - Effect: "Allow"
+      Action:
+        - sns:*
+      Resource:
+        - "*"
+    - Effect: "Allow"
+      Action:
+        - rds-data:*
+      Resource:
+        - "*"
+
+plugins:
+  - serverless-pseudo-parameters
+  - serverless-appsync-plugin
+  - serverless-plugin-split-stacks
+
+package:
+  exclude:
+    - mapping-templates-beta/**
+    - mapping-templates-prod/**
+    - mapping-templates-dev/**
+    - mapping-templates-alpha/**
+    - package-lock.json
+    - package.json
+    - schema.gql
+
+functions:
+  sendMessageResolver:
+    handler: send-message-resolver.handler
+    description: "lambda resolver for Mutation.sendMessage field"
+  subscribeToLeadsResolver:
+    handler: subscribe-to-leads-resolver.handler
+    description: "lambda resolver for Mutation.subscribeToLeads field"
+    timeout: 30
+
+  unsubscribeFromLeadsResolver:
+    handler: unsubscribe-from-leads-resolver.handler
+    description: "lambda resolver for Mutation.unsubscribeFromLeads field"
+    timeout: 30
+
+  videoApplicationsResolver:
+    handler: video-applications-resolver.handler
+    description: "lambda resolver for Video.applications field"
+
+  urlResolver:
+    handler: url-resolver.handler
+    description: "lambda resolver for Video.videoURL and Video.thumbnailURL field"
+
+  recruiterCountResolver:
+    handler: recruiter-count-resolver.handler
+    description: "lambda resolver for Recruiter.count field"
+    timeout: 30
+
+  candidateCountResolver:
+    handler: candidate-count-resolver.handler
+    description: "lambda resolver for Candidate.count field"
+    timeout: 30
+
+  candidateLeadCountResolver:
+    handler: candidate-lead-count-resolver.handler
+    description: "lambda resolver for Candidate.leadCount field"
+    timeout: 30
+
+  roomTokenResolver:
+    handler: roomToken-resolver.handler
+    description: "lambda resolver for Application.roomToken field"
+
+  createVideoResolver:
+    handler: createVideo-resolver.handler
+    description: "lambda resolver for Mutation.createVideo field"
+
+  createApplicationResolver:
+    handler: createApplication-resolver.handler
+    description: "lambda resolver for Mutation.createApplication field"
+
+  createJobResolver:
+    handler: createJob-resolver.handler
+    description: "lambda resolver for Mutation.createJob field"
+
+  updateVideoResolver:
+    handler: updateVideo-resolver.handler
+    description: "lambda resolver for Mutation.updateVideo field"
+
+  updateJobResolver:
+    handler: updateJob-resolver.handler
+    description: "lambda resolver for Mutation.updateJob field"
+
+  updateApplicationResolver:
+    handler: updateApplication-resolver.handler
+    description: "lambda resolver for Mutation.updateApplication field"
+
+  updateUserResolver:
+    handler: updateUser-resolver.handler
+    description: "lambda resolver for Mutation.updateCandidate & Mutation.updateRecruiter field"
+
+  candidateJobsResolver:
+    handler: candidate-jobs-resolver.handler
+    description: "lambda resolver for Candidate.jobs field"
+
+  recruiterVideosResolver:
+    handler: recruiter-videos-resolver.handler
+    description: "lambda resolver for Recruiter.videos field"
+
+  candidateVideosResolver:
+    handler: candidate-videos-resolver.handler
+    description: "lambda resolver for Candidate.videos field"
+
+  candidateProposalsResolver:
+    handler: candidate-proposals-resolver.handler
+    description: "lambda resolver for Candidate.proposals field"
+
+  recruiterJobsResolver:
+    handler: recruiter-jobs-resolver.handler
+    description: "lambda resolver for Recruiter.jobs field"
+
+  recruiterCandidatesResolver:
+    handler: recruiter-candidates-resolver.handler
+    description: "lambda resolver for Recruiter.candidates field"
+
+  recruiterApplicationsResolver:
+    handler: recruiter-applications-resolver.handler
+    description: "lambda resolver for Recruiter.applications field"
+
+  askResolver:
+    handler: ask-resolver.handler
+    description: "lambda resolver for Mutation.ask field"
+
+  createCareerResolver:
+    handler: createCareer-resolver.handler
+    description: "lambda resolver for Mutation.createCareer field"
+
+  onlineRecruitersResolver:
+    handler: online-recruiters-resolver.handler
+    description: "lambda resolver for Candidate.onlineRecruiters field"
+    timeout: 30
+
+  onlineCandidatesResolver:
+    handler: online-candidates-resolver.handler
+    description: "lambda resolver for Candidate.onlineCandidates field"
+    timeout: 30
+
+  numberOfApplicationsResolver:
+    handler: number-of-applications.handler
+    description: "Get total number of applications according to respective conditions"
+    timeout: 30
+
+custom:
+  memSize:
+    dev: 128
+    beta: 128
+    alpha: 128
+    prod: 512
+  stage: ${opt:stage, self:provider.stage}
+  splitStacks:
+    perFunction: false
+    perType: true
+  authType:
+    dev: AMAZON_COGNITO_USER_POOLS
+    alpha: AMAZON_COGNITO_USER_POOLS
+    beta: AMAZON_COGNITO_USER_POOLS
+    prod: AMAZON_COGNITO_USER_POOLS
+  appSync:
+    name: FLIPHIRE-${self:custom.stage}
+    authenticationType: ${self:custom.authType.${self:custom.stage}}
+    userPoolConfig:
+      awsRegion: ${self:provider.region}
+      defaultAction: ALLOW
+      userPoolId: us-east-1_bK5CIAWYD
+    logConfig:
+      loggingRoleArn: { Fn::GetAtt: [AppSyncServiceRole, Arn] }
+      level: ERROR
+    mappingTemplatesLocation: mapping-templates-${self:custom.stage}
+    mappingTemplates:
+      - dataSource: WeightTable
+        type: Query
+        field: listWeights
+        request: list-request.vtl
+        response: response.vtl
+      - dataSource: DBCluster
+        type: Query
+        field: listJobs
+        request: job/listJobs-request.vtl
+        response: job/listJobs-response.vtl
+      - dataSource: DBCluster
+        type: Mutation
+        field: createTestJob
+        request: job/createTestJob-request.vtl
+        response: job/createTestJob-response.vtl
+      - dataSource: RecruiterTable
+        type: Query
+        field: getRecruiter
+        request: recruiter/getRecruiter-request.vtl
+        response: response.vtl
+      # - dataSource: RecruiterTable
+      #   type: Query
+      #   field: listRecruiters
+      #   request: list-request.vtl
+      #   response: response.vtl
+      - dataSource: RecruiterCountLambda
+        type: Recruiter
+        field: count
+        request: lambda-request.vtl
+        response: response.vtl
+      - dataSource: RecruiterJobsLambda
+        type: Recruiter
+        field: jobs
+        request: lambda-request.vtl
+        response: response.vtl
+      - dataSource: RecruiterCandidatesLambda
+        type: Recruiter
+        field: candidates
+        request: lambda-request.vtl
+        response: response.vtl
+      - dataSource: RecruiterApplicationsLambda
+        type: Recruiter
+        field: applications
+        request: lambda-request.vtl
+        response: response.vtl
+      - dataSource: AskLambda
+        type: Mutation
+        field: ask
+        request: lambda-request.vtl
+        response: response.vtl
+      - dataSource: SendMessageLambda
+        type: Mutation
+        field: sendMessage
+        request: lambda-request.vtl
+        response: response.vtl
+      - dataSource: SubscribeToLeadsLambda
+        type: Mutation
+        field: subscribeToLeads
+        request: lambda-request.vtl
+        response: response.vtl
+      - dataSource: UnsubscribeFromLeadsLambda
+        type: Mutation
+        field: unsubscribeFromLeads
+        request: lambda-request.vtl
+        response: response.vtl
+      - dataSource: IndustryTable
+        type: Recruiter
+        field: industry
+        request: recruiter/industry-request.vtl
+        response: response.vtl
+      - dataSource: IndustryTable
+        type: Recruiter
+        field: availableIndustries
+        request: list-request.vtl
+        response: response.vtl
+      - dataSource: TitleTable
+        type: Recruiter
+        field: title
+        request: recruiter/title-request.vtl
+        response: response.vtl
+      - dataSource: TitleTable
+        type: Recruiter
+        field: availableTitles
+        request: list-request.vtl
+        response: response.vtl
+      - dataSource: WorkTypeTable
+        type: Recruiter
+        field: availableWorkTypes
+        request: list-request.vtl
+        response: response.vtl
+      - dataSource: CareerCategoryTable
+        type: Recruiter
+        field: availableCategories
+        request: list-request.vtl
+        response: response.vtl
+      - dataSource: SalaryTypeTable
+        type: Recruiter
+        field: availableSalaryTypes
+        request: list-request.vtl
+        response: response.vtl
+      - dataSource: IncentiveTable
+        type: Recruiter
+        field: availableIncentives
+        request: list-request.vtl
+        response: response.vtl
+      - dataSource: BenefitTable
+        type: Recruiter
+        field: availableBenefits
+        request: list-request.vtl
+        response: response.vtl
+      - dataSource: RequirementTable
+        type: Recruiter
+        field: availableRequirements
+        request: list-request.vtl
+        response: response.vtl
+      - dataSource: CurrentStatusTable
+        type: Candidate
+        field: availableCurrentStatuses
+        request: list-request.vtl
+        response: response.vtl
+      - dataSource: EducationTable
+        type: Candidate
+        field: availableEducations
+        request: list-request.vtl
+        response: response.vtl
+      - dataSource: ResumeTable
+        type: Candidate
+        field: availableResumes
+        request: list-request.vtl
+        response: response.vtl
+      # - dataSource: RecruiterTable
+      #   type: Mutation
+      #   field: createRecruiter
+      #   request: create-request.vtl
+      #   response: response.vtl
+      - dataSource: UpdateUserLambda
+        type: Mutation
+        field: updateRecruiter
+        request: recruiter/updateRecruiter-request.vtl
+        response: response.vtl
+      - dataSource: RecruiterTable
+        type: Mutation
+        field: updateRecruiterStatus
+        request: updateUserStatus-request.vtl
+        response: response.vtl
+      # - dataSource: RecruiterTable
+      #   type: Mutation
+      #   field: deleteRecruiter
+      #   request: delete-request.vtl
+      #   response: response.vtl
+      - dataSource: CandidateTable
+        type: Query
+        field: getCandidate
+        request: get-request.vtl
+        response: response.vtl
+      # - dataSource: CandidateTable
+      #   type: Query
+      #   field: listCandidates
+      #   request: list-request.vtl
+      #   response: response.vtl
+      - dataSource: IndustryTable
+        type: Candidate
+        field: industries
+        request: candidate/industries-request.vtl
+        response: candidate/industries-response.vtl
+      - dataSource: CurrentStatusTable
+        type: Candidate
+        field: currentStatus
+        request: candidate/currentStatus-request.vtl
+        response: response.vtl
+      - dataSource: EducationTable
+        type: Candidate
+        field: education
+        request: candidate/education-request.vtl
+        response: response.vtl
+      - dataSource: ResumeTable
+        type: Candidate
+        field: resumes
+        request: candidate/resumes-request.vtl
+        response: candidate/resumes-response.vtl
+      - dataSource: IndustryTable
+        type: Candidate
+        field: availableIndustries
+        request: list-request.vtl
+        response: response.vtl
+      - dataSource: WorkTypeTable
+        type: Candidate
+        field: availableWorkTypes
+        request: list-request.vtl
+        response: response.vtl
+      - dataSource: CareerCategoryTable
+        type: Candidate
+        field: availableCategories
+        request: list-request.vtl
+        response: response.vtl
+      - dataSource: WorkTypeTable
+        type: Candidate
+        field: workTypes
+        request: candidate/workTypes-request.vtl
+        response: candidate/workTypes-response.vtl
+      - dataSource: CandidateVideosLambda
+        type: Candidate
+        field: videos
+        request: lambda-request.vtl
+        response: response.vtl
+      - dataSource: ExperienceTable
+        type: Candidate
+        field: experiences
+        request: candidate/experiences-request.vtl
+        response: candidate/experiences-response.vtl
+      - dataSource: VideoTable
+        type: Application
+        field: moreQuestions
+        request: application/moreQuestions-request.vtl
+        response: no-pagination-response.vtl
+      - dataSource: VideoTable
+        type: Recruiter
+        field: moreQuestions
+        request: recruiter/moreQuestions-request.vtl
+        response: no-pagination-response.vtl
+      - dataSource: CareerTable
+        type: Candidate
+        field: careers
+        request: candidate/careers-request.vtl
+        response: candidate/careers-response.vtl
+      - dataSource: CandidateProposalsLambda
+        type: Candidate
+        field: proposals
+        request: lambda-request.vtl
+        response: response.vtl
+      # - dataSource: CandidateTable
+      #   type: Mutation
+      #   field: createCandidate
+      #   request: candidate/createCandidate-request.vtl
+      #   response: response.vtl
+      - dataSource: UpdateUserLambda
+        type: Mutation
+        field: updateCandidate
+        request: candidate/updateCandidate-request.vtl
+        response: response.vtl
+      - dataSource: CandidateTable
+        type: Mutation
+        field: updateCandidateStatus
+        request: updateUserStatus-request.vtl
+        response: response.vtl
+      # - dataSource: CandidateTable
+      #   type: Mutation
+      #   field: deleteCandidate
+      #   request: delete-request.vtl
+      #   response: response.vtl
+      - dataSource: JobTable
+        type: Query
+        field: getJob
+        request: get-request.vtl
+        response: response.vtl
+      - dataSource: VideoTable
+        type: Job
+        field: video
+        request: video-request.vtl
+        response: video-response.vtl
+      - dataSource: VideoTable
+        type: Recruiter
+        field: video
+        request: recruiter/video-request.vtl
+        response: recruiter/video-response.vtl
+      - dataSource: VideoTable
+        type: Application
+        field: video
+        request: application/video-request.vtl
+        response: application/video-response.vtl
+      - dataSource: RecruiterTable
+        type: Job
+        field: recruiter
+        request: job/recruiter-request.vtl
+        response: job/recruiter-response.vtl
+      - dataSource: CareerCategoryTable
+        type: Job
+        field: careerCategory
+        request: job/careerCategory-request.vtl
+        response: response.vtl
+      - dataSource: WorkTypeTable
+        type: Job
+        field: employmentType
+        request: job/employmentType-request.vtl
+        response: response.vtl
+      - dataSource: BenefitTable
+        type: Job
+        field: benefits
+        request: job/benefits-request.vtl
+        response: job/benefits-response.vtl
+      - dataSource: IncentiveTable
+        type: Job
+        field: incentives
+        request: job/incentives-request.vtl
+        response: job/incentives-response.vtl
+      - dataSource: RequirementTable
+        type: Job
+        field: requirements
+        request: job/requirements-request.vtl
+        response: job/requirements-response.vtl
+      - dataSource: SalaryTypeTable
+        type: Job
+        field: salaryType
+        request: job/salaryType-request.vtl
+        response: response.vtl
+      - dataSource: CategoryTypeTable
+        type: Job
+        field: categoryType
+        request: job/categoryType-request.vtl
+        response: response.vtl
+      - dataSource: CategoryTypeTable
+        type: CareerCategory
+        field: types
+        request: career-category/types-request.vtl
+        response: response.vtl
+      - dataSource: CareerCategoryTable
+        type: CategoryType
+        field: category
+        request: category-type/category-request.vtl
+        response: response.vtl
+      # - dataSource: JobTable
+      #   type: Query
+      #   field: listJobs
+      #   request: list-request.vtl
+      #   response: response.vtl
+      - dataSource: ApplicationTable
+        type: Job
+        field: applications
+        request: job/applications-request.vtl
+        response: response.vtl
+      - dataSource: QuestionTable
+        type: Job
+        field: questions
+        request: job/questions-request.vtl
+        response: job/questions-response.vtl
+      - dataSource: CreateJobLambda
+        type: Mutation
+        field: createJob
+        request: lambda-request.vtl
+        response: response.vtl
+      - dataSource: UpdateJobLambda
+        type: Mutation
+        field: updateJob
+        request: lambda-request.vtl
+        response: response.vtl
+      - dataSource: JobTable
+        type: Mutation
+        field: deleteJob
+        request: job/deleteJob-request.vtl
+        response: response.vtl
+      # - dataSource: ApplicationTable
+      #   type: Query
+      #   field: getApplication
+      #   request: application/getApplication-request.vtl
+      #   response: response.vtl
+      # - dataSource: ApplicationTable
+      #   type: Query
+      #   field: listApplications
+      #   request: list-request.vtl
+      #   response: response.vtl
+      - dataSource: CreateApplicationLambda
+        type: Mutation
+        field: createApplication
+        request: lambda-request.vtl
+        response: response.vtl
+      - dataSource: UpdateApplicationLambda
+        type: Mutation
+        field: updateApplication
+        request: lambda-request.vtl
+        response: response.vtl
+      - dataSource: ApplicationTable
+        type: Mutation
+        field: deleteApplication
+        request: application/deleteApplication-request.vtl
+        response: response.vtl
+      # - dataSource: VideoTable
+      #   type: Query
+      #   field: getVideo
+      #   request: video/getVideo-request.vtl
+      #   response: response.vtl
+      # - dataSource: VideoTable
+      #   type: Query
+      #   field: listVideos
+      #   request: list-request.vtl
+      #   response: response.vtl
+      - dataSource: CreateVideoLambda
+        type: Mutation
+        field: createVideo
+        request: lambda-request.vtl
+        response: response.vtl
+      - dataSource: UpdateVideoLambda
+        type: Mutation
+        field: updateVideo
+        request: lambda-request.vtl
+        response: response.vtl
+      - dataSource: VideoTable
+        type: Mutation
+        field: deleteVideo
+        request: video/deleteVideo-request.vtl
+        response: response.vtl
+      # - dataSource: QuestionTable
+      #   type: Query
+      #   field: getQuestion
+      #   request: get-request.vtl
+      #   response: response.vtl
+      # - dataSource: QuestionTable
+      #   type: Query
+      #   field: listQuestions
+      #   request: list-request.vtl
+      #   response: response.vtl
+      - dataSource: WeightTable
+        type: Mutation
+        field: createWeight
+        request: create-request.vtl
+        response: response.vtl
+      - dataSource: WeightTable
+        type: Mutation
+        field: updateWeight
+        request: update-request.vtl
+        response: response.vtl
+      - dataSource: QuestionTable
+        type: Mutation
+        field: createQuestion
+        request: question/createQuestion-request.vtl
+        response: response.vtl
+      - dataSource: QuestionTable
+        type: Mutation
+        field: updateQuestion
+        request: question/updateQuestion-request.vtl
+        response: response.vtl
+      - dataSource: QuestionTable
+        type: Mutation
+        field: deleteQuestion
+        request: question/deleteQuestion-request.vtl
+        response: response.vtl
+      - dataSource: RoomTokenLambda
+        type: Application
+        field: roomToken
+        request: lambda-request.vtl
+        response: response.vtl
+      - dataSource: JobTable
+        type: Application
+        field: job
+        request: application/job-request.vtl
+        response: response.vtl
+      - dataSource: CandidateTable
+        type: Application
+        field: candidate
+        request: application/candidate-request.vtl
+        response: application/candidate-response.vtl
+      - dataSource: VideoTable
+        type: Application
+        field: profileVideo
+        request: application/profileVideo-request.vtl
+        response: application/profileVideo-response.vtl
+      # - dataSource: IndustryTable
+      #   type: Query
+      #   field: getIndustry
+      #   request: get-request.vtl
+      #   response: response.vtl
+      # - dataSource: IndustryTable
+      #   type: Query
+      #   field: listIndustries
+      #   request: list-request.vtl
+      #   response: response.vtl
+      # - dataSource: TitleTable
+      #   type: Query
+      #   field: getTitle
+      #   request: get-request.vtl
+      #   response: response.vtl
+      # - dataSource: TitleTable
+      #   type: Query
+      #   field: listTitles
+      #   request: list-request.vtl
+      #   response: response.vtl
+      # - dataSource: SalaryTypeTable
+      #   type: Query
+      #   field: getSalaryType
+      #   request: get-request.vtl
+      #   response: response.vtl
+      # - dataSource: SalaryTypeTable
+      #   type: Query
+      #   field: listSalaryTypes
+      #   request: list-request.vtl
+      #   response: response.vtl
+      # - dataSource: IncentiveTable
+      #   type: Query
+      #   field: getIncentive
+      #   request: get-request.vtl
+      #   response: response.vtl
+      # - dataSource: IncentiveTable
+      #   type: Query
+      #   field: listIncentives
+      #   request: list-request.vtl
+      #   response: response.vtl
+      # - dataSource: BenefitTable
+      #   type: Query
+      #   field: getBenefit
+      #   request: get-request.vtl
+      #   response: response.vtl
+      # - dataSource: BenefitTable
+      #   type: Query
+      #   field: listBenefits
+      #   request: list-request.vtl
+      #   response: response.vtl
+      # - dataSource: RequirementTable
+      #   type: Query
+      #   field: getRequirement
+      #   request: get-request.vtl
+      #   response: response.vtl
+      # - dataSource: RequirementTable
+      #   type: Query
+      #   field: listRequirements
+      #   request: list-request.vtl
+      #   response: response.vtl
+      # - dataSource: WorkTypeTable
+      #   type: Query
+      #   field: getWorkType
+      #   request: get-request.vtl
+      #   response: response.vtl
+      # - dataSource: WorkTypeTable
+      #   type: Query
+      #   field: listWorkTypes
+      #   request: list-request.vtl
+      #   response: response.vtl
+      # - dataSource: CareerCategoryTable
+      #   type: Query
+      #   field: getCareerCategory
+      #   request: get-request.vtl
+      #   response: response.vtl
+      # - dataSource: CareerCategoryTable
+      #   type: Query
+      #   field: listCareerCategories
+      #   request: list-request.vtl
+      #   response: response.vtl
+      # - dataSource: CurrentStatusTable
+      #   type: Query
+      #   field: getCurrentStatus
+      #   request: get-request.vtl
+      #   response: response.vtl
+      # - dataSource: CurrentStatusTable
+      #   type: Query
+      #   field: listCurrentStatuses
+      #   request: list-request.vtl
+      #   response: response.vtl
+      # - dataSource: EducationTable
+      #   type: Query
+      #   field: getEducation
+      #   request: get-request.vtl
+      #   response: response.vtl
+      # - dataSource: EducationTable
+      #   type: Query
+      #   field: listEducations
+      #   request: list-request.vtl
+      #   response: response.vtl
+      # - dataSource: ResumeTable
+      #   type: Query
+      #   field: getResume
+      #   request: get-request.vtl
+      #   response: response.vtl
+      # - dataSource: ResumeTable
+      #   type: Query
+      #   field: listResumes
+      #   request: list-request.vtl
+      #   response: response.vtl
+      # - dataSource: ExperienceTable
+      #   type: Query
+      #   field: getExperience
+      #   request: experience/getExperience-request.vtl
+      #   response: response.vtl
+      # - dataSource: ExperienceTable
+      #   type: Query
+      #   field: listExperiences
+      #   request: list-request.vtl
+      #   response: response.vtl
+      - dataSource: ExperienceTable
+        type: Mutation
+        field: createExperience
+        request: create-request.vtl
+        response: response.vtl
+      - dataSource: ExperienceTable
+        type: Mutation
+        field: updateExperience
+        request: experience/updateExperience-request.vtl
+        response: response.vtl
+      - dataSource: ExperienceTable
+        type: Mutation
+        field: deleteExperience
+        request: experience/deleteExperience-request.vtl
+        response: response.vtl
+      - dataSource: DismatchTable
+        type: Mutation
+        field: createDismatch
+        request: create-request.vtl
+        response: response.vtl
+      # - dataSource: DismatchTable
+      #   type: Mutation
+      #   field: deleteDismatch
+      #   request: delete-request.vtl
+      #   response: response.vtl
+      # - dataSource: CareerTable
+      #   type: Query
+      #   field: getCareer
+      #   request: career/getCareer-request.vtl
+      #   response: response.vtl
+      # - dataSource: CareerTable
+      #   type: Query
+      #   field: listCareers
+      #   request: list-request.vtl
+      #   response: response.vtl
+      - dataSource: CreateCareerLambda
+        type: Mutation
+        field: createCareer
+        request: lambda-request.vtl
+        response: response.vtl
+      - dataSource: CareerTable
+        type: Mutation
+        field: updateCareer
+        request: career/updateCareer-request.vtl
+        response: response.vtl
+      - dataSource: CareerTable
+        type: Mutation
+        field: deleteCareer
+        request: career/deleteCareer-request.vtl
+        response: response.vtl
+      - dataSource: CandidateJobsLambda
+        type: Candidate
+        field: jobs
+        request: lambda-request.vtl
+        response: response.vtl
+      - dataSource: RecruiterVideosLambda
+        type: Recruiter
+        field: videos
+        request: lambda-request.vtl
+        response: response.vtl
+      - dataSource: OnlineCandidatesLambda
+        type: Recruiter
+        field: onlineCandidates
+        request: lambda-request.vtl
+        response: response.vtl
+      - dataSource: NumberOfApplicationsLambda
+        type: Recruiter
+        field: numberOfApplications
+        request: lambda-request.vtl
+        response: response.vtl
+      - dataSource: OnlineRecruitersLambda
+        type: Candidate
+        field: onlineRecruiters
+        request: lambda-request.vtl
+        response: response.vtl
+      - dataSource: CandidateCountLambda
+        type: Candidate
+        field: count
+        request: lambda-request.vtl
+        response: response.vtl
+      - dataSource: CandidateLeadCountLambda
+        type: Candidate
+        field: leadCount
+        request: lambda-request.vtl
+        response: response.vtl
+      - dataSource: UrlLambda
+        type: Video
+        field: videoURL
+        request: video/video-request.vtl
+        response: response.vtl
+      - dataSource: UrlLambda
+        type: Video
+        field: thumbnailURL
+        request: video/thumbnail-request.vtl
+        response: response.vtl
+      - dataSource: VideoApplicationsLambda
+        type: Video
+        field: applications
+        request: lambda-request.vtl
+        response: response.vtl
+      - dataSource: CareerCategoryTable
+        type: Career
+        field: category
+        request: career/category-request.vtl
+        response: response.vtl
+      # - dataSource: CategoryTypeTable
+      #   type: Mutation
+      #   field: createCategoryType
+      #   request: create-request.vtl
+      #   response: response.vtl
+      # - dataSource: CategoryTypeTable
+      #   type: Mutation
+      #   field: updateCategoryType
+      #   request: update-request.vtl
+      #   response: response.vtl
+      # - dataSource: CategoryTypeTable
+      #   type: Mutation
+      #   field: deleteCategoryType
+      #   request: delete-request.vtl
+      #   response: response.vtl
+      # - dataSource: IndustryTable
+      #   type: Mutation
+      #   field: createIndustry
+      #   request: create-request.vtl
+      #   response: response.vtl
+      # - dataSource: IndustryTable
+      #   type: Mutation
+      #   field: updateIndustry
+      #   request: update-request.vtl
+      #   response: response.vtl
+      # - dataSource: IndustryTable
+      #   type: Mutation
+      #   field: deleteIndustry
+      #   request: delete-request.vtl
+      #   response: response.vtl
+      # - dataSource: TitleTable
+      #   type: Mutation
+      #   field: createTitle
+      #   request: create-request.vtl
+      #   response: response.vtl
+      # - dataSource: TitleTable
+      #   type: Mutation
+      #   field: updateTitle
+      #   request: update-request.vtl
+      #   response: response.vtl
+      # - dataSource: TitleTable
+      #   type: Mutation
+      #   field: deleteTitle
+      #   request: delete-request.vtl
+      #   response: response.vtl
+      # - dataSource: SalaryTypeTable
+      #   type: Mutation
+      #   field: createSalaryType
+      #   request: create-request.vtl
+      #   response: response.vtl
+      # - dataSource: SalaryTypeTable
+      #   type: Mutation
+      #   field: updateSalaryType
+      #   request: update-request.vtl
+      #   response: response.vtl
+      # - dataSource: SalaryTypeTable
+      #   type: Mutation
+      #   field: deleteSalaryType
+      #   request: delete-request.vtl
+      #   response: response.vtl
+      # - dataSource: IncentiveTable
+      #   type: Mutation
+      #   field: createIncentive
+      #   request: create-request.vtl
+      #   response: response.vtl
+      # - dataSource: IncentiveTable
+      #   type: Mutation
+      #   field: updateIncentive
+      #   request: update-request.vtl
+      #   response: response.vtl
+      # - dataSource: IncentiveTable
+      #   type: Mutation
+      #   field: deleteIncentive
+      #   request: delete-request.vtl
+      #   response: response.vtl
+      # - dataSource: BenefitTable
+      #   type: Mutation
+      #   field: createBenefit
+      #   request: create-request.vtl
+      #   response: response.vtl
+      # - dataSource: BenefitTable
+      #   type: Mutation
+      #   field: updateBenefit
+      #   request: update-request.vtl
+      #   response: response.vtl
+      # - dataSource: BenefitTable
+      #   type: Mutation
+      #   field: deleteBenefit
+      #   request: delete-request.vtl
+      #   response: response.vtl
+      # - dataSource: RequirementTable
+      #   type: Mutation
+      #   field: createRequirement
+      #   request: create-request.vtl
+      #   response: response.vtl
+      # - dataSource: RequirementTable
+      #   type: Mutation
+      #   field: updateRequirement
+      #   request: update-request.vtl
+      #   response: response.vtl
+      # - dataSource: RequirementTable
+      #   type: Mutation
+      #   field: deleteRequirement
+      #   request: delete-request.vtl
+      #   response: response.vtl
+      # - dataSource: WorkTypeTable
+      #   type: Mutation
+      #   field: createWorkType
+      #   request: create-request.vtl
+      #   response: response.vtl
+      # - dataSource: WorkTypeTable
+      #   type: Mutation
+      #   field: updateWorkType
+      #   request: update-request.vtl
+      #   response: response.vtl
+      # - dataSource: WorkTypeTable
+      #   type: Mutation
+      #   field: deleteWorkType
+      #   request: delete-request.vtl
+      #   response: response.vtl
+      # - dataSource: CareerCategoryTable
+      #   type: Mutation
+      #   field: createCareerCategory
+      #   request: create-request.vtl
+      #   response: response.vtl
+      # - dataSource: CareerCategoryTable
+      #   type: Mutation
+      #   field: updateCareerCategory
+      #   request: update-request.vtl
+      #   response: response.vtl
+      # - dataSource: CareerCategoryTable
+      #   type: Mutation
+      #   field: deleteCareerCategory
+      #   request: delete-request.vtl
+      #   response: response.vtl
+      # - dataSource: CurrentStatusTable
+      #   type: Mutation
+      #   field: createCurrentStatus
+      #   request: create-request.vtl
+      #   response: response.vtl
+      # - dataSource: CurrentStatusTable
+      #   type: Mutation
+      #   field: updateCurrentStatus
+      #   request: update-request.vtl
+      #   response: response.vtl
+      # - dataSource: CurrentStatusTable
+      #   type: Mutation
+      #   field: deleteCurrentStatus
+      #   request: delete-request.vtl
+      #   response: response.vtl
+      # - dataSource: EducationTable
+      #   type: Mutation
+      #   field: createEducation
+      #   request: create-request.vtl
+      #   response: response.vtl
+      # - dataSource: EducationTable
+      #   type: Mutation
+      #   field: updateEducation
+      #   request: update-request.vtl
+      #   response: response.vtl
+      # - dataSource: EducationTable
+      #   type: Mutation
+      #   field: deleteEducation
+      #   request: delete-request.vtl
+      #   response: response.vtl
+      # - dataSource: ResumeTable
+      #   type: Mutation
+      #   field: createResume
+      #   request: create-request.vtl
+      #   response: response.vtl
+      # - dataSource: ResumeTable
+      #   type: Mutation
+      #   field: updateResume
+      #   request: update-request.vtl
+      #   response: response.vtl
+      # - dataSource: ResumeTable
+      #   type: Mutation
+      #   field: deleteResume
+      #   request: delete-request.vtl
+      #   response: response.vtl
+    schema: schema.gql
+    serviceRole: AppSyncServiceRole
+    dataSources:
+      - type: RELATIONAL_DATABASE
+        name: DBCluster
+        description: "Fliphire Aurora Serverless DB Cluster"
+        config:
+          dbClusterIdentifier: ${cf:db-${self:custom.stage}.DBClusterIdentifier}
+          awsSecretStoreArn: ${cf:db-${self:custom.stage}.MasterUserSecret}
+          serviceRoleArn: { Fn::GetAtt: [AppSyncServiceRole, Arn] }
+          databaseName: fliphire
+      - type: AWS_LAMBDA
+        name: SendMessageLambda
+        description: "Lambda DataSource for resolving Mutation.sendMessage field"
+        config:
+          lambdaFunctionArn:
+            { Fn::GetAtt: [SendMessageResolverLambdaFunction, Arn] }
+          serviceRoleArn: { Fn::GetAtt: [AppSyncServiceRole, Arn] }
+      - type: AWS_LAMBDA
+        name: SubscribeToLeadsLambda
+        description: "Lambda DataSource for resolving Mutation.subscribeToLeads field"
+        config:
+          lambdaFunctionArn:
+            { Fn::GetAtt: [SubscribeToLeadsResolverLambdaFunction, Arn] }
+          serviceRoleArn: { Fn::GetAtt: [AppSyncServiceRole, Arn] }
+      - type: AWS_LAMBDA
+        name: UnsubscribeFromLeadsLambda
+        description: "Lambda DataSource for resolving Mutation.unsubscribeFromLeads field"
+        config:
+          lambdaFunctionArn:
+            { Fn::GetAtt: [UnsubscribeFromLeadsResolverLambdaFunction, Arn] }
+          serviceRoleArn: { Fn::GetAtt: [AppSyncServiceRole, Arn] }
+      - type: AWS_LAMBDA
+        name: RecruiterVideosLambda
+        description: "Lambda DataSource for resolving Recruiter.videos field"
+        config:
+          lambdaFunctionArn:
+            { Fn::GetAtt: [RecruiterVideosResolverLambdaFunction, Arn] }
+          serviceRoleArn: { Fn::GetAtt: [AppSyncServiceRole, Arn] }
+      - type: AWS_LAMBDA
+        name: CandidateLeadCountLambda
+        description: "Lambda DataSource for resolving Candidate.leadCount field"
+        config:
+          lambdaFunctionArn:
+            { Fn::GetAtt: [CandidateLeadCountResolverLambdaFunction, Arn] }
+          serviceRoleArn: { Fn::GetAtt: [AppSyncServiceRole, Arn] }
+      - type: AWS_LAMBDA
+        name: CandidateCountLambda
+        description: "Lambda DataSource for resolving Candidate.count field"
+        config:
+          lambdaFunctionArn:
+            { Fn::GetAtt: [CandidateCountResolverLambdaFunction, Arn] }
+          serviceRoleArn: { Fn::GetAtt: [AppSyncServiceRole, Arn] }
+      - type: AWS_LAMBDA
+        name: RecruiterCountLambda
+        description: "Lambda DataSource for resolving Recruiter.count field"
+        config:
+          lambdaFunctionArn:
+            { Fn::GetAtt: [RecruiterCountResolverLambdaFunction, Arn] }
+          serviceRoleArn: { Fn::GetAtt: [AppSyncServiceRole, Arn] }
+      - type: AWS_LAMBDA
+        name: VideoApplicationsLambda
+        description: "Lambda DataSource for resolving Video.applications field"
+        config:
+          lambdaFunctionArn:
+            { Fn::GetAtt: [VideoApplicationsResolverLambdaFunction, Arn] }
+          serviceRoleArn: { Fn::GetAtt: [AppSyncServiceRole, Arn] }
+      - type: AWS_LAMBDA
+        name: CandidateProposalsLambda
+        description: "Lambda DataSource for resolving Candidate.proposals field"
+        config:
+          lambdaFunctionArn:
+            { Fn::GetAtt: [CandidateProposalsResolverLambdaFunction, Arn] }
+          serviceRoleArn: { Fn::GetAtt: [AppSyncServiceRole, Arn] }
+      - type: AWS_LAMBDA
+        name: CandidateJobsLambda
+        description: "Lambda DataSource for resolving Candidate.jobs field"
+        config:
+          lambdaFunctionArn:
+            { Fn::GetAtt: [CandidateJobsResolverLambdaFunction, Arn] }
+          serviceRoleArn: { Fn::GetAtt: [AppSyncServiceRole, Arn] }
+      - type: AWS_LAMBDA
+        name: CandidateVideosLambda
+        description: "Lambda DataSource for resolving Candidate.videos field"
+        config:
+          lambdaFunctionArn:
+            { Fn::GetAtt: [CandidateVideosResolverLambdaFunction, Arn] }
+          serviceRoleArn: { Fn::GetAtt: [AppSyncServiceRole, Arn] }
+      - type: AWS_LAMBDA
+        name: RecruiterJobsLambda
+        description: "Lambda DataSource for resolving Recruiter.jobs field"
+        config:
+          lambdaFunctionArn:
+            { Fn::GetAtt: [RecruiterJobsResolverLambdaFunction, Arn] }
+          serviceRoleArn: { Fn::GetAtt: [AppSyncServiceRole, Arn] }
+      - type: AWS_LAMBDA
+        name: UrlLambda
+        description: "Lambda DataSource for resolving Video.videoURL or Video.thumbnailURL field"
+        config:
+          lambdaFunctionArn: { Fn::GetAtt: [UrlResolverLambdaFunction, Arn] }
+          serviceRoleArn: { Fn::GetAtt: [AppSyncServiceRole, Arn] }
+      - type: AWS_LAMBDA
+        name: RoomTokenLambda
+        description: "Lambda DataSource for resolving Application.roomToken field"
+        config:
+          lambdaFunctionArn:
+            { Fn::GetAtt: [RoomTokenResolverLambdaFunction, Arn] }
+          serviceRoleArn: { Fn::GetAtt: [AppSyncServiceRole, Arn] }
+      - type: AWS_LAMBDA
+        name: CreateVideoLambda
+        description: "Lambda DataSource for resolving Mutation.createVideo field"
+        config:
+          lambdaFunctionArn:
+            { Fn::GetAtt: [CreateVideoResolverLambdaFunction, Arn] }
+          serviceRoleArn: { Fn::GetAtt: [AppSyncServiceRole, Arn] }
+      - type: AWS_LAMBDA
+        name: UpdateVideoLambda
+        description: "Lambda DataSource for resolving Mutation.updateVideo field"
+        config:
+          lambdaFunctionArn:
+            { Fn::GetAtt: [UpdateVideoResolverLambdaFunction, Arn] }
+          serviceRoleArn: { Fn::GetAtt: [AppSyncServiceRole, Arn] }
+      - type: AWS_LAMBDA
+        name: UpdateJobLambda
+        description: "Lambda DataSource for resolving Mutation.updateJob field"
+        config:
+          lambdaFunctionArn:
+            { Fn::GetAtt: [UpdateJobResolverLambdaFunction, Arn] }
+          serviceRoleArn: { Fn::GetAtt: [AppSyncServiceRole, Arn] }
+      - type: AWS_LAMBDA
+        name: UpdateApplicationLambda
+        description: "Lambda DataSource for resolving Mutation.updateApplication field"
+        config:
+          lambdaFunctionArn:
+            { Fn::GetAtt: [UpdateApplicationResolverLambdaFunction, Arn] }
+          serviceRoleArn: { Fn::GetAtt: [AppSyncServiceRole, Arn] }
+      - type: AWS_LAMBDA
+        name: UpdateUserLambda
+        description: "Lambda DataSource for updateUserResolver"
+        config:
+          lambdaFunctionArn:
+            { Fn::GetAtt: [UpdateUserResolverLambdaFunction, Arn] }
+          serviceRoleArn: { Fn::GetAtt: [AppSyncServiceRole, Arn] }
+      - type: AWS_LAMBDA
+        name: CreateApplicationLambda
+        description: "Lambda DataSource for resolving Mutation.createApplication field"
+        config:
+          lambdaFunctionArn:
+            { Fn::GetAtt: [CreateApplicationResolverLambdaFunction, Arn] }
+          serviceRoleArn: { Fn::GetAtt: [AppSyncServiceRole, Arn] }
+      - type: AWS_LAMBDA
+        name: CreateJobLambda
+        description: "Lambda DataSource for resolving Mutation.createJob field"
+        config:
+          lambdaFunctionArn:
+            { Fn::GetAtt: [CreateJobResolverLambdaFunction, Arn] }
+          serviceRoleArn: { Fn::GetAtt: [AppSyncServiceRole, Arn] }
+      - type: AWS_LAMBDA
+        name: RecruiterCandidatesLambda
+        description: "Lambda DataSource for resolving Recruiter.candidates field"
+        config:
+          lambdaFunctionArn:
+            { Fn::GetAtt: [RecruiterCandidatesResolverLambdaFunction, Arn] }
+          serviceRoleArn: { Fn::GetAtt: [AppSyncServiceRole, Arn] }
+      - type: AWS_LAMBDA
+        name: RecruiterApplicationsLambda
+        description: "Lambda DataSource for resolving Recruiter.applications field"
+        config:
+          lambdaFunctionArn:
+            { Fn::GetAtt: [RecruiterApplicationsResolverLambdaFunction, Arn] }
+          serviceRoleArn: { Fn::GetAtt: [AppSyncServiceRole, Arn] }
+      - type: AWS_LAMBDA
+        name: AskLambda
+        description: "Lambda DataSource for resolving Mutation.ask mutation"
+        config:
+          lambdaFunctionArn: { Fn::GetAtt: [AskResolverLambdaFunction, Arn] }
+          serviceRoleArn: { Fn::GetAtt: [AppSyncServiceRole, Arn] }
+      - type: AWS_LAMBDA
+        name: CreateCareerLambda
+        description: "Lambda DataSource for resolving Mutation.createCareer mutation"
+        config:
+          lambdaFunctionArn:
+            { Fn::GetAtt: [CreateCareerResolverLambdaFunction, Arn] }
+          serviceRoleArn: { Fn::GetAtt: [AppSyncServiceRole, Arn] }
+      - type: AWS_LAMBDA
+        name: OnlineRecruitersLambda
+        description: "Lambda DataSource for resolving candidate.onlineRecruiters field"
+        config:
+          lambdaFunctionArn:
+            { Fn::GetAtt: [OnlineRecruitersResolverLambdaFunction, Arn] }
+          serviceRoleArn: { Fn::GetAtt: [AppSyncServiceRole, Arn] }
+      - type: AWS_LAMBDA
+        name: OnlineCandidatesLambda
+        description: "Lambda DataSource for resolving recruiter.onlineCandidates field"
+        config:
+          lambdaFunctionArn:
+            { Fn::GetAtt: [OnlineCandidatesResolverLambdaFunction, Arn] }
+          serviceRoleArn: { Fn::GetAtt: [AppSyncServiceRole, Arn] }
+      - type: AWS_LAMBDA
+        name: NumberOfApplicationsLambda
+        description: "Lambda DataSource for resolving recruiter.numberOfApplications field"
+        config:
+          lambdaFunctionArn:
+            { Fn::GetAtt: [NumberOfApplicationsResolverLambdaFunction, Arn] }
+          serviceRoleArn: { Fn::GetAtt: [AppSyncServiceRole, Arn] }
+      - type: AMAZON_DYNAMODB
+        name: DeviceTable
+        description: "Device Table"
+        config:
+          tableName: DeviceTable-${self:custom.stage}
+          serviceRoleArn: { Fn::GetAtt: [AppSyncServiceRole, Arn] }
+      - type: AMAZON_DYNAMODB
+        name: WeightTable
+        description: "Weight Table"
+        config:
+          tableName: WeightTable-${self:custom.stage}
+          serviceRoleArn: { Fn::GetAtt: [AppSyncServiceRole, Arn] }
+      - type: AMAZON_DYNAMODB
+        name: CandidateTable
+        description: "Candidate Table"
+        config:
+          tableName: CandidateTable-${self:custom.stage}
+          serviceRoleArn: { Fn::GetAtt: [AppSyncServiceRole, Arn] }
+      - type: AMAZON_DYNAMODB
+        name: InvitationTable
+        description: "Invitation Table"
+        config:
+          tableName: InvitationTable-${self:custom.stage}
+          serviceRoleArn: { Fn::GetAtt: [AppSyncServiceRole, Arn] }
+      - type: AMAZON_DYNAMODB
+        name: RecruiterTable
+        description: "Recruiter Table"
+        config:
+          tableName: RecruiterTable-${self:custom.stage}
+          serviceRoleArn: { Fn::GetAtt: [AppSyncServiceRole, Arn] }
+      - type: AMAZON_DYNAMODB
+        name: JobTable
+        description: "Job Table"
+        config:
+          tableName: JobTable-${self:custom.stage}
+          serviceRoleArn: { Fn::GetAtt: [AppSyncServiceRole, Arn] }
+      - type: AMAZON_DYNAMODB
+        name: VideoTable
+        description: "Video Table"
+        config:
+          tableName: VideoTable-${self:custom.stage}
+          serviceRoleArn: { Fn::GetAtt: [AppSyncServiceRole, Arn] }
+      - type: AMAZON_DYNAMODB
+        name: ApplicationTable
+        description: "Application Table"
+        config:
+          tableName: ApplicationTable-${self:custom.stage}
+          serviceRoleArn: { Fn::GetAtt: [AppSyncServiceRole, Arn] }
+      - type: AMAZON_DYNAMODB
+        name: QuestionTable
+        description: "Question Table"
+        config:
+          tableName: QuestionTable-${self:custom.stage}
+          serviceRoleArn: { Fn::GetAtt: [AppSyncServiceRole, Arn] }
+      - type: AMAZON_DYNAMODB
+        name: ExperienceTable
+        description: "Experience Table"
+        config:
+          tableName: ExperienceTable-${self:custom.stage}
+          serviceRoleArn: { Fn::GetAtt: [AppSyncServiceRole, Arn] }
+      - type: AMAZON_DYNAMODB
+        name: CareerTable
+        description: "Career Table"
+        config:
+          tableName: CareerTable-${self:custom.stage}
+          serviceRoleArn: { Fn::GetAtt: [AppSyncServiceRole, Arn] }
+      - type: AMAZON_DYNAMODB
+        name: DismatchTable
+        description: "Dismatch Table"
+        config:
+          tableName: DismatchTable-${self:custom.stage}
+          serviceRoleArn: { Fn::GetAtt: [AppSyncServiceRole, Arn] }
+      - type: AMAZON_DYNAMODB
+        name: IndustryTable
+        description: "Industry Table"
+        config:
+          tableName: IndustryTable-${self:custom.stage}
+          serviceRoleArn: { Fn::GetAtt: [AppSyncServiceRole, Arn] }
+      - type: AMAZON_DYNAMODB
+        name: TitleTable
+        description: "Title Table"
+        config:
+          tableName: TitleTable-${self:custom.stage}
+          serviceRoleArn: { Fn::GetAtt: [AppSyncServiceRole, Arn] }
+      - type: AMAZON_DYNAMODB
+        name: WorkTypeTable
+        description: "WorkType Table"
+        config:
+          tableName: WorkTypeTable-${self:custom.stage}
+          serviceRoleArn: { Fn::GetAtt: [AppSyncServiceRole, Arn] }
+      - type: AMAZON_DYNAMODB
+        name: CareerCategoryTable
+        description: "CareerCategory Table"
+        config:
+          tableName: CareerCategoryTable-${self:custom.stage}
+          serviceRoleArn: { Fn::GetAtt: [AppSyncServiceRole, Arn] }
+      - type: AMAZON_DYNAMODB
+        name: SalaryTypeTable
+        description: "SalaryType Table"
+        config:
+          tableName: SalaryTypeTable-${self:custom.stage}
+          serviceRoleArn: { Fn::GetAtt: [AppSyncServiceRole, Arn] }
+      - type: AMAZON_DYNAMODB
+        name: IncentiveTable
+        description: "Incentive Table"
+        config:
+          tableName: IncentiveTable-${self:custom.stage}
+          serviceRoleArn: { Fn::GetAtt: [AppSyncServiceRole, Arn] }
+      - type: AMAZON_DYNAMODB
+        name: BenefitTable
+        description: "Benefit Table"
+        config:
+          tableName: BenefitTable-${self:custom.stage}
+          serviceRoleArn: { Fn::GetAtt: [AppSyncServiceRole, Arn] }
+      - type: AMAZON_DYNAMODB
+        name: RequirementTable
+        description: "Requirement Table"
+        config:
+          tableName: RequirementTable-${self:custom.stage}
+          serviceRoleArn: { Fn::GetAtt: [AppSyncServiceRole, Arn] }
+      - type: AMAZON_DYNAMODB
+        name: CurrentStatusTable
+        description: "CurrentStatus Table"
+        config:
+          tableName: CurrentStatusTable-${self:custom.stage}
+          serviceRoleArn: { Fn::GetAtt: [AppSyncServiceRole, Arn] }
+      - type: AMAZON_DYNAMODB
+        name: EducationTable
+        description: "Education Table"
+        config:
+          tableName: EducationTable-${self:custom.stage}
+          serviceRoleArn: { Fn::GetAtt: [AppSyncServiceRole, Arn] }
+      - type: AMAZON_DYNAMODB
+        name: ResumeTable
+        description: "Resume Table"
+        config:
+          tableName: ResumeTable-${self:custom.stage}
+          serviceRoleArn: { Fn::GetAtt: [AppSyncServiceRole, Arn] }
+      - type: AMAZON_DYNAMODB
+        name: CategoryTypeTable
+        description: "CategoryType Table"
+        config:
+          tableName: CategoryTypeTable-${self:custom.stage}
+          serviceRoleArn: { Fn::GetAtt: [AppSyncServiceRole, Arn] }
+
+resources:
+  Resources:
+    AppSyncServiceRole:
+      Type: "AWS::IAM::Role"
+      Description: "Allow AppSync to access to CloudWatch, DynamoDB and Lambda on your behalf"
+      Properties:
+        RoleName: AppSyncServiceRole-${self:custom.stage}
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: "Allow"
+              Principal:
+                Service:
+                  - "appsync.amazonaws.com"
+              Action:
+                - "sts:AssumeRole"
+        Policies:
+          - PolicyName: "SecretsManager-AppSyncServiceRole-Policy"
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: "Allow"
+                  Action:
+                    - "secretsmanager:*"
+                  Resource:
+                    - "*"
+          - PolicyName: "RDS-AppSyncServiceRole-Policy"
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: "Allow"
+                  Action:
+                    - "rds-data:*"
+                  Resource:
+                    - "*"
+          - PolicyName: "Elasticsearch-AppSyncServiceRole-Policy"
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: "Allow"
+                  Action:
+                    - "es:*"
+                  Resource:
+                    - "*"
+          - PolicyName: "CloudWatch-AppSyncServiceRole-Policy"
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: "Allow"
+                  Action:
+                    - logs:*
+                  Resource: "*"
+          - PolicyName: "Dynamo-AppSyncServiceRole-Policy"
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: "Allow"
+                  Action:
+                    - dynamodb:*
+                  Resource: "*"
+          - PolicyName: "Lambda-AppSyncServiceRole-Policy"
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: "Allow"
+                  Action:
+                    - lambda:*
+                  Resource: "*"
+
+  Outputs:
+    AppSyncServiceRoleArn:
+      Description: AppSyncServiceRoleArn
+      Value:
+        Fn::GetAtt:
+          - AppSyncServiceRole
+          - Arn
+      Export:
+        Name: AppSyncServiceRoleArn-${self:custom.stage}

@@ -1,0 +1,5 @@
+#if($util.isNull(${ctx.source.benefitIds}) || $ctx.source.benefitIds.isEmpty())
+    $util.toJson([])
+#else
+    $util.toJson($context.result.data.BenefitTable-beta)
+#end

@@ -1,0 +1,12 @@
+{
+  "arguments": {
+    "input": {
+      "type": "ProfileGeneric",
+      "video": "fileNameVideo",
+      "title": "Mutation Test",
+      "thumbnail": "fileNameThumb",
+      "candidateId": "8d3512e6-ee36-4174-8947-362c2e769c92"
+    }
+  },
+  "source": null
+}

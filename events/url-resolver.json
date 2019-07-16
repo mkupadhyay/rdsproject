@@ -1,0 +1,12 @@
+{
+  "parent": "job",
+  "field": "video",
+  "arguments": {},
+  "source": {
+    "id": "e43dfc6e-b304-49b5-aab6-71e7e8920d1e",
+    "createdAt": "2018-10-16T09:04:07.541Z",
+    "updatedAt": "2018-10-16T09:04:07.541Z",
+    "title": "test1",
+    "recruiterId": "04490ea2-7b65-491f-92fe-303b91f5084a"
+  }
+}

@@ -1,0 +1,8 @@
+{
+    "resource": "/email/send",
+    "queryStringParameters": {
+        "username": "555ca637-82da-4712-8c16-c4a66909b7ff"
+    },
+    "body": null,
+    "isBase64Encoded": false
+}

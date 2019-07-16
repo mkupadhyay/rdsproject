@@ -1,0 +1,5 @@
+#if($util.isNullOrEmpty($ctx.source.profileVideoId))
+    $util.toJson(null)
+#else
+    $util.toJson($ctx.result)
+#end

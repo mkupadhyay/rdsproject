@@ -1,0 +1,5 @@
+#if($util.isNull(${ctx.source.resumeIds}) || $ctx.source.resumeIds.isEmpty())
+    $util.toJson([])
+#else
+    $util.toJson($context.result.data.ResumeTable-alpha)
+#end

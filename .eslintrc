@@ -1,0 +1,30 @@
+{
+  "env": {
+    "node": true,
+    "es6": true,
+    "commonjs": true,
+    "jest/globals": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 2017
+  },
+  "extends": ["prettier", "eslint:recommended", "plugin:jest/recommended"],
+  "plugins": ["prettier", "jest"],
+  "rules": {
+    "linebreak-style": ["error", "unix"],
+    "semi": ["warn", "always"],
+    "no-unused-vars": "warn",
+    "indent": [0, "tab"],
+    "no-tabs": 0,
+    "no-alert": "off",
+    "no-use-before-define": "warn",
+    "no-console": "off",
+    "no-param-reassign": "warn",
+    "strict": [1, "global"],
+    "jest/no-disabled-tests": "warn",
+    "jest/no-focused-tests": "error",
+    "jest/no-identical-title": "error",
+    "jest/prefer-to-have-length": "warn",
+    "jest/valid-expect": "error"
+  }
+}

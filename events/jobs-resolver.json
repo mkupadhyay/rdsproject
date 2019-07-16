@@ -1,0 +1,50 @@
+{
+  "arguments": {},
+  "source": {
+    "zip": "10010",
+    "lastName": "Can",
+    "industryIds": ["34d3d2f0-c762-45c7-b151-7efd068ba93b", "9fb42211-eca0-4a16-a688-7e20c7411291", "e81265d4-1521-495b-8d5b-e5dc32a2de06"],
+    "latitude": 40.7375,
+    "salary": "4000",
+    "currentStatusId": "8b3401c0-da22-41d4-b362-61bd165ef9dc",
+    "workTypeIds": ["324c44b7-e986-49f5-902f-aa3237036cfa"],
+    "firstName": "4",
+    "confirmCode": "1TwujvswP6glZdg6TvOPbkNSHvVV54R25nyUWdziP1VfsBm0NNYxjCNhbZx3yorrNoSSpUylRdw2xNZxqmyokUNamMnmbY06UU9X4EsoRwZpVQGKxs39XNjgGpno5Ft5",
+    "educationId": "61568555-25ab-413f-9f71-d92e751ff952",
+    "phone": "+1(111) 111 - 1999",
+    "resumeIds": ["c4364755-3815-478c-958a-2d7c97783d4c", "260de8fe-9d0e-4f96-9dbc-a1d735ccd7e6", "34658428-691f-4cfe-935d-7bb46e758dc7", "3c222841-5420-4d06-924c-624a4142114f"],
+    "onlineTime": "2018-12-22T17:47:06.173Z",
+    "location": "New York, NY",
+    "id": "593bf950-7676-45ff-b1ac-203a46d311c2",
+    "radius": 75,
+    "email": "can4@hg.com",
+    "status": "Online",
+    "updatedAt": "2018-12-22T17:47:06.173Z",
+    "longitude": -73.9813,
+    "username": "593bf950-7676-45ff-b1ac-203a46d311c2"
+  },
+  "identity": {
+    "sub": "593bf950-7676-45ff-b1ac-203a46d311c2",
+    "issuer": "https://cognito-idp.us-west-2.amazonaws.com/us-west-2_qi18C3Wc9",
+    "username": "593bf950-7676-45ff-b1ac-203a46d311c2",
+    "claims": {
+      "sub": "593bf950-7676-45ff-b1ac-203a46d311c2",
+      "cognito:groups": ["Candidate"],
+      "email_verified": false,
+      "iss": "https://cognito-idp.us-west-2.amazonaws.com/us-west-2_qi18C3Wc9",
+      "cognito:username": "593bf950-7676-45ff-b1ac-203a46d311c2",
+      "given_name": "4",
+      "aud": "59hhcoofa9ll9fi2us4hvpr30k",
+      "event_id": "1adf6f25-060e-11e9-9239-852f5b8d39dd",
+      "token_use": "id",
+      "auth_time": 1545499326,
+      "exp": 1545502926,
+      "iat": 1545499326,
+      "family_name": "Can",
+      "email": "can4@hg.com"
+    },
+    "sourceIp": ["185.25.118.102"],
+    "defaultAuthStrategy": "ALLOW",
+    "groups": ["Candidate"]
+  }
+}

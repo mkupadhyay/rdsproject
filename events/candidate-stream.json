@@ -1,0 +1,187 @@
+{
+  "Records": [
+    {
+      "eventID": "ceacc593b2481cfd41457e330a643c27",
+      "eventName": "MODIFY",
+      "eventVersion": "1.1",
+      "eventSource": "aws:dynamodb",
+      "awsRegion": "us-west-2",
+      "dynamodb": {
+        "ApproximateCreationDateTime": 1529012640,
+        "Keys": {
+          "id": {
+            "S": "4600c7ee-f108-4049-aa5d-9ea26382223c"
+          }
+        },
+        "NewImage": {
+          "resume": {
+            "S": "http://newton.com"
+          },
+          "zip": {
+            "S": "48284"
+          },
+          "lastName": {
+            "S": "Hand"
+          },
+          "education": {
+            "S": "Industrial University1"
+          },
+          "currentStatus": {
+            "S": "Loaf"
+          },
+          "latitude": {
+            "S": "-66.5531"
+          },
+          "salary": {
+            "S": "75000"
+          },
+          "workTypes": {
+            "L": [
+              {
+                "S": "be206289-8264-47ea-9845-538d9c2d9ae8"
+              },
+              {
+                "S": "9ac4351b-6b5a-4a67-ab66-244ce60d88f9"
+              },
+              {
+                "S": "67ef10ad-7305-46a2-ab38-6d6425c1581a"
+              },
+              {
+                "S": "376e81e9-5f55-4a87-8bbf-0b2317fbf831"
+              },
+              {
+                "S": "2bb1dc62-c94f-4cf7-890e-b1e680650119"
+              }
+            ]
+          },
+          "createdAt": {
+            "N": "1528846571222"
+          },
+          "firstName": {
+            "S": "Lacy"
+          },
+          "confirmCode": {
+            "S": "fO6OV407wXD8dzQPEnrQyG9ZXO6X1N9WM90BQHMOlldTaJ93tfnQd3xBrApa6LskXUvNt0BZSTscmYE1qu543TnGn2fJXrIyayeccqm0SVzTzqq5snhJfItJMZ2tKZhN"
+          },
+          "phone": {
+            "S": "+380123534015"
+          },
+          "industries": {
+            "L": [
+              {
+                "S": "any"
+              }
+            ]
+          },
+          "id": {
+            "S": "4600c7ee-f108-4049-aa5d-9ea26382223c"
+          },
+          "status": {
+            "S": "Online"
+          },
+          "radius": {
+            "N": "20"
+          },
+          "email": {
+            "S": "Rollin.Wyman66@yahoo.com"
+          },
+          "longitude": {
+            "S": "134.0926"
+          },
+          "updatedAt": {
+            "N": "1528846571222"
+          },
+          "username": {
+            "S": "2c05e759-4585-4945-99a8-1c719ec33a1a"
+          }
+        },
+        "OldImage": {
+          "resume": {
+            "S": "http://newton.com"
+          },
+          "zip": {
+            "S": "48284"
+          },
+          "lastName": {
+            "S": "Hand"
+          },
+          "education": {
+            "S": "Industrial University"
+          },
+          "currentStatus": {
+            "S": "Loaf"
+          },
+          "latitude": {
+            "S": "-66.5531"
+          },
+          "salary": {
+            "S": "75000"
+          },
+          "workTypes": {
+            "L": [
+              {
+                "S": "be206289-8264-47ea-9845-538d9c2d9ae8"
+              },
+              {
+                "S": "9ac4351b-6b5a-4a67-ab66-244ce60d88f9"
+              },
+              {
+                "S": "67ef10ad-7305-46a2-ab38-6d6425c1581a"
+              },
+              {
+                "S": "376e81e9-5f55-4a87-8bbf-0b2317fbf831"
+              },
+              {
+                "S": "2bb1dc62-c94f-4cf7-890e-b1e680650119"
+              }
+            ]
+          },
+          "createdAt": {
+            "N": "1528846571222"
+          },
+          "firstName": {
+            "S": "Lacy"
+          },
+          "confirmCode": {
+            "S": "fO6OV407wXD8dzQPEnrQyG9ZXO6X1N9WM90BQHMOlldTaJ93tfnQd3xBrApa6LskXUvNt0BZSTscmYE1qu543TnGn2fJXrIyayeccqm0SVzTzqq5snhJfItJMZ2tKZhN"
+          },
+          "phone": {
+            "S": "+380123534015"
+          },
+          "industries": {
+            "L": [
+              {
+                "S": "any"
+              }
+            ]
+          },
+          "id": {
+            "S": "4600c7ee-f108-4049-aa5d-9ea26382223c"
+          },
+          "status": {
+            "S": "Offline"
+          },
+          "radius": {
+            "N": "20"
+          },
+          "email": {
+            "S": "Rollin.Wyman66@yahoo.com"
+          },
+          "longitude": {
+            "S": "134.0926"
+          },
+          "updatedAt": {
+            "N": "1528846571222"
+          },
+          "username": {
+            "S": "2c05e759-4585-4945-99a8-1c719ec33a1a"
+          }
+        },
+        "SequenceNumber": "16829500000000036006847456",
+        "SizeBytes": 1381,
+        "StreamViewType": "NEW_AND_OLD_IMAGES"
+      },
+      "eventSourceARN": "arn:aws:dynamodb:us-west-2:229344080863:table/CandidateTable/stream/2018-06-14T21:04:44.425"
+    }
+  ]
+}

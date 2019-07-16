@@ -1,0 +1,18 @@
+#set($id = $util.autoId())
+{
+  "version": "2017-02-28",
+  "operation": "PutItem",
+  "key": {
+    "id": $util.dynamodb.toDynamoDBJson($id),
+  },
+  $util.qr($ctx.args.input.put("createdAt", $util.time.nowISO8601()))
+  $util.qr($ctx.args.input.put("updatedAt", $util.time.nowISO8601()))
+  $util.qr($ctx.args.input.put('username', $context.identity.username))
+  "attributeValues": $util.dynamodb.toMapValuesJson($ctx.args.input),
+  "condition": {
+    "expression": "attribute_not_exists(#id)",
+    "expressionNames": {
+      "#id": "id",
+    },
+  },
+}

@@ -1,0 +1,884 @@
+service: db
+
+frameworkVersion: "1.46.1"
+
+provider:
+  name: aws
+  runtime: nodejs8.10
+  region: us-east-1
+  stage: dev
+  memorySize: ${self:custom.memSize.${self:custom.stage}}
+  profile: ams-backend
+  versionFunctions: false
+  environment:
+    STAGE: ${self:custom.stage}
+    AWSREGION: ${self:provider.region}
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - secretsmanager:*
+      Resource:
+        - "*"
+    - Effect: "Allow"
+      Action:
+        - rds-data:*
+      Resource:
+        - "*"
+    - Effect: "Allow"
+      Action:
+        - dynamodb:*
+      Resource: "*"
+
+package:
+  exclude:
+    - package-lock.json
+    - package.json
+
+plugins:
+  - serverless-pseudo-parameters
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  memSize:
+    dev: 128
+    beta: 128
+    alpha: 128
+    prod: 512
+  throughput:
+    dev: 5
+    beta: 5
+    alpha: 5
+    prod: 10
+  es_volume_size:
+    dev: 10
+    alpha: 10
+    beta: 10
+    prod: 20
+  es_instance_count:
+    dev: 1
+    alpha: 1
+    beta: 1
+    prod: 5
+
+resources:
+  Resources:
+    # Bastion:
+    #   Type: AWS::EC2::Instance
+    #   # DependsOn: BastionSecurityGroup
+    #   Properties:
+    #     DisableApiTermination: false
+    #     ImageId: ami-0565af6e282977273
+    #     InstanceType: t2.nano
+    #     KeyName: bastion
+    #     Monitoring: false
+    #     # SecurityGroupIds:
+    #     #   - Ref: BastionSecurityGroup
+    #     UserData: Base64 "apt-get install mysql-client -y"
+
+    # BastionSecurityGroup:
+    #   Type: AWS::EC2::SecurityGroup
+    #   Properties:
+    #     GroupDescription: "Security Group for Aurora Serverless DB Cluster's Bastion Host"
+    #     SecurityGroupEgress:
+    #       - CidrIp: 0.0.0.0/0
+    #         FromPort: -1
+    #         ToPort: -1
+    #         IpProtocol: -1
+    #       # - DestinationSecurityGroupId:
+    #       #     Ref: VpcSecurityGroupId
+    #       #   FromPort: 3306
+    #       #   ToPort: 3306
+    #       #   IpProtocol: tcp
+    #     SecurityGroupIngress: []
+
+    MasterUserSecret:
+      Type: AWS::SecretsManager::Secret
+      Properties:
+        Description: "DB Cluster's Master User Password secret"
+        # SecretString: String
+        GenerateSecretString:
+          SecretStringTemplate: '{"username": "root"}'
+          GenerateStringKey: "password"
+          PasswordLength: 10
+          ExcludeCharacters: '"@/\'
+        Name: MasterUserSecret-${self:custom.stage}
+
+    DBCluster:
+      Type: AWS::RDS::DBCluster
+      DependsOn: MasterUserSecret
+      Properties:
+        Engine: aurora
+        EngineMode: serverless
+        EngineVersion: 5.6
+        DatabaseName: fliphire2
+        DBClusterIdentifier: fliphire-${self:custom.stage}
+        MasterUsername:
+          Fn::Join:
+            [
+              "",
+              [
+                "{{resolve:secretsmanager:",
+                Ref: MasterUserSecret,
+                ":SecretString:username}}",
+              ],
+            ]
+        MasterUserPassword:
+          Fn::Join:
+            [
+              "",
+              [
+                "{{resolve:secretsmanager:",
+                Ref: MasterUserSecret,
+                ":SecretString:password}}",
+              ],
+            ]
+        BackupRetentionPeriod: 35
+        DeletionProtection: false
+
+    SecretTargetAttachment:
+      Type: AWS::SecretsManager::SecretTargetAttachment
+      DependsOn: DBCluster
+      Properties:
+        TargetType: AWS::RDS::DBCluster
+        SecretId:
+          Ref: MasterUserSecret
+        TargetId:
+          Ref: DBCluster
+
+    ElasticsearchDomain:
+      Type: AWS::Elasticsearch::Domain
+      Properties:
+        ElasticsearchVersion: 6.3
+        DomainName: fliphire-${self:custom.stage}
+        EBSOptions:
+          EBSEnabled: true
+          VolumeType: gp2
+          VolumeSize: ${self:custom.es_volume_size.${self:custom.stage}}
+        ElasticsearchClusterConfig:
+          InstanceType: t2.small.elasticsearch
+          InstanceCount: ${self:custom.es_instance_count.${self:custom.stage}}
+          DedicatedMasterEnabled: false
+          ZoneAwarenessEnabled: false
+        AccessPolicies:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Principal:
+                AWS: "*"
+              Action: es:*
+              Resource: "*"
+
+    JobTable:
+      Type: "AWS::DynamoDB::Table"
+      Properties:
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+          WriteCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+        StreamSpecification:
+          StreamViewType: NEW_AND_OLD_IMAGES
+        TimeToLiveSpecification:
+          AttributeName: ttl
+          Enabled: true
+        TableName: JobTable-${self:custom.stage}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+          - AttributeName: recruiterId
+            AttributeType: S
+          - AttributeName: employmentTypeId
+            AttributeType: S
+          - AttributeName: careerCategoryId
+            AttributeType: S
+        GlobalSecondaryIndexes:
+          - IndexName: Jobs
+            KeySchema:
+              - AttributeName: recruiterId
+                KeyType: HASH
+              - AttributeName: id
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+              WriteCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+          - IndexName: JobsByEmploymentType
+            KeySchema:
+              - AttributeName: careerCategoryId
+                KeyType: HASH
+              - AttributeName: employmentTypeId
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+              WriteCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+
+    RecruiterTable:
+      Type: "AWS::DynamoDB::Table"
+      DependsOn: JobTable
+      Properties:
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+          WriteCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+        StreamSpecification:
+          StreamViewType: NEW_AND_OLD_IMAGES
+        TableName: RecruiterTable-${self:custom.stage}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+          - AttributeName: industryId
+            AttributeType: S
+        GlobalSecondaryIndexes:
+          - IndexName: RecruiterByIndustry
+            KeySchema:
+              - AttributeName: industryId
+                KeyType: HASH
+              - AttributeName: id
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+              WriteCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+
+    CandidateTable:
+      Type: "AWS::DynamoDB::Table"
+      DependsOn: RecruiterTable
+      Properties:
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        ProvisionedThroughput:
+          ReadCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+          WriteCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+        StreamSpecification:
+          StreamViewType: NEW_AND_OLD_IMAGES
+        TableName: CandidateTable-${self:custom.stage}
+
+    InvitationTable:
+      Type: "AWS::DynamoDB::Table"
+      DependsOn: ApplicationTable
+      Properties:
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+          - AttributeName: email
+            AttributeType: S
+          - AttributeName: jobId
+            AttributeType: S
+          - AttributeName: candidateId
+            AttributeType: S
+        ProvisionedThroughput:
+          ReadCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+          WriteCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+        TableName: InvitationTable-${self:custom.stage}
+        TimeToLiveSpecification:
+          AttributeName: ttl
+          Enabled: true
+        GlobalSecondaryIndexes:
+          - IndexName: InvitationsByEmail
+            KeySchema:
+              - AttributeName: email
+                KeyType: HASH
+              - AttributeName: jobId
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+              WriteCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+          - IndexName: InvitationsByJob
+            KeySchema:
+              - AttributeName: jobId
+                KeyType: HASH
+              - AttributeName: candidateId
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+              WriteCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+
+    VideoTable:
+      Type: "AWS::DynamoDB::Table"
+      DependsOn: CandidateTable
+      Properties:
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+          WriteCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+        TableName: VideoTable-${self:custom.stage}
+        StreamSpecification:
+          StreamViewType: NEW_AND_OLD_IMAGES
+        TimeToLiveSpecification:
+          AttributeName: ttl
+          Enabled: true
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+          - AttributeName: candidateId
+            AttributeType: S
+          - AttributeName: recruiterId
+            AttributeType: S
+          - AttributeName: type
+            AttributeType: S
+        GlobalSecondaryIndexes:
+          - IndexName: Videos
+            KeySchema:
+              - AttributeName: candidateId
+                KeyType: HASH
+              - AttributeName: type
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+              WriteCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+          - IndexName: VideosByType
+            KeySchema:
+              - AttributeName: type
+                KeyType: HASH
+              - AttributeName: recruiterId
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+              WriteCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+
+    QuestionTable:
+      Type: "AWS::DynamoDB::Table"
+      DependsOn: VideoTable
+      Properties:
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+          WriteCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+        TableName: QuestionTable-${self:custom.stage}
+        TimeToLiveSpecification:
+          AttributeName: ttl
+          Enabled: true
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+          - AttributeName: jobId
+            AttributeType: S
+        GlobalSecondaryIndexes:
+          - IndexName: Questions
+            KeySchema:
+              - AttributeName: jobId
+                KeyType: HASH
+              - AttributeName: id
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+              WriteCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+
+    CareerTable:
+      Type: "AWS::DynamoDB::Table"
+      DependsOn: QuestionTable
+      Properties:
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+          WriteCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+        TableName: CareerTable-${self:custom.stage}
+        TimeToLiveSpecification:
+          AttributeName: ttl
+          Enabled: true
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+          - AttributeName: candidateId
+            AttributeType: S
+        GlobalSecondaryIndexes:
+          - IndexName: Careers
+            KeySchema:
+              - AttributeName: candidateId
+                KeyType: HASH
+              - AttributeName: id
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+              WriteCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+
+    DismatchTable:
+      Type: "AWS::DynamoDB::Table"
+      DependsOn: CareerTable
+      Properties:
+        KeySchema:
+          - AttributeName: candidateId
+            KeyType: HASH
+          - AttributeName: jobId
+            KeyType: RANGE
+        AttributeDefinitions:
+          - AttributeName: candidateId
+            AttributeType: S
+          - AttributeName: jobId
+            AttributeType: S
+        ProvisionedThroughput:
+          ReadCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+          WriteCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+        TableName: DismatchTable-${self:custom.stage}
+
+    ExperienceTable:
+      Type: "AWS::DynamoDB::Table"
+      DependsOn: DismatchTable
+      Properties:
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+          WriteCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+        TableName: ExperienceTable-${self:custom.stage}
+        TimeToLiveSpecification:
+          AttributeName: ttl
+          Enabled: true
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+          - AttributeName: candidateId
+            AttributeType: S
+        GlobalSecondaryIndexes:
+          - IndexName: Experiences
+            KeySchema:
+              - AttributeName: candidateId
+                KeyType: HASH
+              - AttributeName: id
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+              WriteCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+
+    ApplicationTable:
+      Type: "AWS::DynamoDB::Table"
+      DependsOn: ExperienceTable
+      Properties:
+        KeySchema:
+          - AttributeName: candidateId
+            KeyType: HASH
+          - AttributeName: jobId
+            KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+          WriteCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+        StreamSpecification:
+          StreamViewType: NEW_AND_OLD_IMAGES
+        TimeToLiveSpecification:
+          AttributeName: ttl
+          Enabled: true
+        TableName: ApplicationTable-${self:custom.stage}
+        AttributeDefinitions:
+          - AttributeName: jobId
+            AttributeType: S
+          - AttributeName: candidateId
+            AttributeType: S
+          - AttributeName: recruiterId
+            AttributeType: S
+        GlobalSecondaryIndexes:
+          - IndexName: Applications
+            KeySchema:
+              - AttributeName: jobId
+                KeyType: HASH
+              - AttributeName: candidateId
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+              WriteCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+          - IndexName: Candidates
+            KeySchema:
+              - AttributeName: recruiterId
+                KeyType: HASH
+              - AttributeName: jobId
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+              WriteCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+
+    SalaryTypeTable:
+      Type: "AWS::DynamoDB::Table"
+      DependsOn: InvitationTable
+      Properties:
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        ProvisionedThroughput:
+          ReadCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+          WriteCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+        TableName: SalaryTypeTable-${self:custom.stage}
+
+    RequirementTable:
+      Type: "AWS::DynamoDB::Table"
+      DependsOn: InvitationTable
+      Properties:
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        ProvisionedThroughput:
+          ReadCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+          WriteCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+        TableName: RequirementTable-${self:custom.stage}
+
+    BenefitTable:
+      Type: "AWS::DynamoDB::Table"
+      DependsOn: RequirementTable
+      Properties:
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        ProvisionedThroughput:
+          ReadCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+          WriteCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+        TableName: BenefitTable-${self:custom.stage}
+
+    IncentiveTable:
+      Type: "AWS::DynamoDB::Table"
+      DependsOn: RequirementTable
+      Properties:
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        ProvisionedThroughput:
+          ReadCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+          WriteCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+        TableName: IncentiveTable-${self:custom.stage}
+
+    CurrentStatusTable:
+      Type: "AWS::DynamoDB::Table"
+      DependsOn: RequirementTable
+      Properties:
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        ProvisionedThroughput:
+          ReadCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+          WriteCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+        TableName: CurrentStatusTable-${self:custom.stage}
+
+    EducationTable:
+      Type: "AWS::DynamoDB::Table"
+      DependsOn: CurrentStatusTable
+      Properties:
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        ProvisionedThroughput:
+          ReadCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+          WriteCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+        TableName: EducationTable-${self:custom.stage}
+
+    ResumeTable:
+      Type: "AWS::DynamoDB::Table"
+      DependsOn: CurrentStatusTable
+      Properties:
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        ProvisionedThroughput:
+          ReadCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+          WriteCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+        TableName: ResumeTable-${self:custom.stage}
+        
+    ResumeImportTable:
+      Type: "AWS::DynamoDB::Table"
+      DependsOn: CurrentStatusTable
+      Properties:
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        ProvisionedThroughput:
+          ReadCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+          WriteCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+        TableName: ResumeImportTable-${self:custom.stage}
+    
+
+    WorkTypeTable:
+      Type: "AWS::DynamoDB::Table"
+      DependsOn: ResumeTable
+      Properties:
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        ProvisionedThroughput:
+          ReadCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+          WriteCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+        TableName: WorkTypeTable-${self:custom.stage}
+
+    IndustryTable:
+      Type: "AWS::DynamoDB::Table"
+      DependsOn: ResumeTable
+      Properties:
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        ProvisionedThroughput:
+          ReadCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+          WriteCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+        TableName: IndustryTable-${self:custom.stage}
+
+    CareerCategoryTable:
+      Type: "AWS::DynamoDB::Table"
+      DependsOn: ResumeTable
+      Properties:
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        ProvisionedThroughput:
+          ReadCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+          WriteCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+        TableName: CareerCategoryTable-${self:custom.stage}
+
+    TitleTable:
+      Type: "AWS::DynamoDB::Table"
+      DependsOn: ResumeTable
+      Properties:
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        ProvisionedThroughput:
+          ReadCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+          WriteCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+        TableName: TitleTable-${self:custom.stage}
+
+    CategoryTypeTable:
+      Type: "AWS::DynamoDB::Table"
+      DependsOn: ResumeTable
+      Properties:
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+          WriteCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+        TableName: CategoryTypeTable-${self:custom.stage}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+          - AttributeName: categoryId
+            AttributeType: S
+        GlobalSecondaryIndexes:
+          - IndexName: Types
+            KeySchema:
+              - AttributeName: categoryId
+                KeyType: HASH
+              - AttributeName: id
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+              WriteCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+
+    WeightTable:
+      Type: "AWS::DynamoDB::Table"
+      DependsOn: TitleTable
+      Properties:
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+          WriteCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+        TableName: WeightTable-${self:custom.stage}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+
+    DeviceTable:
+      Type: "AWS::DynamoDB::Table"
+      DependsOn: TitleTable
+      Properties:
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+          WriteCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+        TableName: DeviceTable-${self:custom.stage}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: token
+            AttributeType: S
+        GlobalSecondaryIndexes:
+          - IndexName: DevicesByUser
+            KeySchema:
+              - AttributeName: userId
+                KeyType: HASH
+              - AttributeName: token
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+              WriteCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+          - IndexName: DevicesByToken
+            KeySchema:
+              - AttributeName: token
+                KeyType: HASH
+              - AttributeName: userId
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+              WriteCapacityUnits: ${self:custom.throughput.${self:custom.stage}}
+
+  Outputs:
+    CandidateTableStreamArn:
+      Description: CandidateTable
+      Value:
+        Fn::GetAtt:
+          - CandidateTable
+          - StreamArn
+      Export:
+        Name: CandidateTableStreamArn-${self:custom.stage}
+
+    RecruiterTableStreamArn:
+      Description: RecruiterTable
+      Value:
+        Fn::GetAtt:
+          - RecruiterTable
+          - StreamArn
+      Export:
+        Name: RecruiterTableStreamArn-${self:custom.stage}
+
+    JobTableStreamArn:
+      Description: JobTable
+      Value:
+        Fn::GetAtt:
+          - JobTable
+          - StreamArn
+      Export:
+        Name: JobTableStreamArn-${self:custom.stage}
+
+    VideoTableStreamArn:
+      Description: VideoTable
+      Value:
+        Fn::GetAtt:
+          - VideoTable
+          - StreamArn
+      Export:
+        Name: VideoTableStreamArn-${self:custom.stage}
+
+    ApplicationTableStreamArn:
+      Description: ApplicationTable
+      Value:
+        Fn::GetAtt:
+          - ApplicationTable
+          - StreamArn
+      Export:
+        Name: ApplicationTableStreamArn-${self:custom.stage}
+
+    ElasticsearchEndpoint:
+      Description: "Elasticsearch domain endpoint"
+      Value:
+        Fn::GetAtt:
+          - ElasticsearchDomain
+          - DomainEndpoint
+      Export:
+        Name: ElasticsearchEndpoint-${self:custom.stage}
+
+    DBClusterIdentifier:
+      Description: "Aurora Serverless DB cluster identifier"
+      Value:
+        Ref: DBCluster
+      Export:
+        Name: DBClusterIdentifier-${self:custom.stage}
+
+    DBName:
+      Description: "Database name"
+      Value: fliphire2
+      Export:
+        Name: DBName-${self:custom.stage}
+
+    DBClusterArn:
+      Description: "Aurora Serverless DB cluster ARN"
+      Value:
+        Fn::Join:
+          [
+            ":",
+            [
+              "arn:aws:rds",
+              "#{AWS::Region}",
+              "#{AWS::AccountId}",
+              "cluster",
+              Ref: DBCluster,
+            ],
+          ]
+      Export:
+        Name: DBCluster-${self:custom.stage}
+
+    MasterUserSecret:
+      Description: "MasterUserSecret Arn"
+      Value:
+        Ref: MasterUserSecret
+      Export:
+        Name: MasterUserSecret-${self:custom.stage}

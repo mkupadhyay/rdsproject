@@ -1,0 +1,34 @@
+{
+  "arguments": {
+    "statuses": [
+      "Accepted",
+      "Pending",
+      "More",
+      "Declined",
+      "Withdrawn",
+      "Waiting",
+      "IsReady",
+      "ReadyForInterview",
+      "Interview",
+      "Postponed",
+      "Interrupted",
+      "InterviewFinished",
+      "RecruiterExchanged",
+      "CandidateExchanged",
+      "NotExchanged"
+    ],
+    "jobId": null
+  },
+  "source": {
+    "zip": "76373",
+    "lastName": "Crooks",
+    "latitude": 34.1295,
+    "createdAt": 1529188074282,
+    "firstName": "Bernardo",
+    "phone": "+380123534015",
+    "id": "17189fa3-8661-4ba9-8c3c-a599c72e097b",
+    "email": "Letha.Moore99@gmail.com",
+    "updatedAt": 1529188074282,
+    "username": "4600c7ee-f108-4049-aa5d-9ea26382223c"
+  }
+}

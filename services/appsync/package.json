@@ -1,0 +1,30 @@
+{
+  "name": "appsync",
+  "version": "1.0.0",
+  "description": "appsync microservice of fliphire system",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "appsync",
+    "graphql",
+    "fliphire"
+  ],
+  "author": "fliphire",
+  "license": "ISC",
+  "dependencies": {
+    "elasticsearch": "^15.2.0",
+    "geodist": "^0.2.1",
+    "http-aws-es": "^6.0.0",
+    "non-crypto-hash": "^0.1.2",
+    "twilio": "^3.23.1",
+    "uuid": "^3.3.2",
+    "utilities": "file:../../utilities"
+  },
+  "devDependencies": {
+    "serverless": "^1.39.1",
+    "serverless-appsync-plugin": "^1.1.2",
+    "serverless-plugin-split-stacks": "^1.8.0",
+    "serverless-pseudo-parameters": "^2.4.0"
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "version": "2017-02-28",
+  "operation": "UpdateItem",
+  "key": {
+    "id": $util.dynamodb.toDynamoDBJson($ctx.args.id),
+  },
+
+  #set($now = $util.time.nowISO8601())
+
+  #set($exp = "SET #s = :s, #u = :u")
+  #set($expNames = {"#s": "status", "#u": "updatedAt"})
+  #set($expValues = {":s": $util.dynamodb.toDynamoDB($ctx.args.status), ":u": $util.dynamodb.toDynamoDB($now)})
+
+  #if(!$util.isNullOrEmpty($ctx.args.status) && $ctx.args.status == "Online")
+    $util.qr($expNames.put("#o", "onlineTime"))
+    $util.qr($expValues.put(":o", $util.dynamodb.toDynamoDB($now)))
+    #set($exp = "${exp}, #o = :o")
+  #end
+
+  "update": {
+    "expression": "${exp}",
+    "expressionNames": $utils.toJson($expNames),
+    "expressionValues": $utils.toJson($expValues),
+  },
+
+  #set( $isAdmin = false )
+  #foreach( $group in $context.identity.claims.get("cognito:groups") )
+  	#if( $group == "Admin" )
+    	#set( $isAdmin = true )
+    #end
+  #end
+  "condition": {
+  	#if( $isAdmin )
+    "expression": "attribute_exists(#id)",
+    #else
+    "expression": "attribute_exists(#id) and #id = :id",
+    "expressionValues": {
+      ":id": {"S": "${ctx.identity.username}"}
+    },
+    #end
+    "expressionNames": {
+      "#id": "id"
+    }
+  }
+}

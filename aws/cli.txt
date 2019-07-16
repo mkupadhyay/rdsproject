@@ -1,0 +1,64 @@
+# AWS CLI commands for administration
+
+1. sign up
+
+- recruiter
+$ aws cognito-idp sign-up --client-id 4tksc7kpcmqunbqps5koje9f5e \
+--username test8@gmail.com \
+--password password123 \
+--user-attributes \
+Name=email,Value=test8@gmail.com \
+Name=family_name,Value=test8 \
+Name=given_name,Value=test8 \
+Name=phone_number,Value=+380123534015 \
+Name=zoneinfo,Value=03056 \
+Name=custom:title,Value=title5 \
+Name=custom:type,Value=0 \
+Name=custom:companyName,Value=company5 \
+Name=custom:companyPhone,Value=380123532015 \
+Name=custom:companyLogo,Value=https://www.logo5.com \
+Name=custom:companyVideo,Value=https://www.video5.com \
+Name=custom:companyURL,Value=https://www.company5.com \
+Name=custom:reason,Value=reason5 \
+Name=custom:industry,Value=industry5 \
+Name=custom:isRecruiter,Value=1
+
+- candidate
+$ aws cognito-idp sign-up --client-id 4tksc7kpcmqunbqps5koje9f5e \
+--username test8@outlook.com \
+--password password123 \
+--user-attributes \
+'[{"Name":"email","Value":"test8@outlook.com"},{"Name":"family_name","Value":"test8"},{"Name":"given_name","Value":"test8"},{"Name":"phone_number","Value":"+3801241218"},{"Name":"zoneinfo","Value":"03056"},{"Name":"custom:resume","Value":"resume8"},{"Name":"custom:latitude","Value":"14.293919"},{"Name":"custom:longitude","Value":"15.239434"},{"Name":"custom:radius","Value":"5"},{"Name":"custom:currentStatus","Value":"currentStatus8"},{"Name":"custom:education","Value":"education8"},{"Name":"custom:salary","Value":"salary8"},{"Name":"custom:experience","Value":"experience8"},{"Name":"custom:industries","Value":"industry2,industry3,industry4"},{"Name":"custom:typeOfWorks","Value":"work1,work2,work4"},{"Name":"custom:isRecruiter","Value":"0"}]'
+
+- Media Server
+$ aws cognito-idp sign-up --client-id 4tksc7kpcmqunbqps5koje9f5e \
+--username mediaserver@hiregoat.com \
+--password password123
+
+
+2. list users
+
+- recruiter
+$ aws cognito-idp list-users --user-pool-id us-west-2_uMKjTBLDG
+
+
+3. delete user
+
+$  aws --region us-west-2 cognito-idp admin-delete-user --user-pool-id us-west-2_9tv4CVvNb --username 
+
+4. Update user
+$ aws cognito-idp admin-update-user-attributes \
+--user-pool-id us-west-2_uMKjTBLDG \
+--username 16c9abed-a294-4789-82ef-6b81589ad82a \
+--user-attributes Name=email_verified,Value=true
+
+5. Authenticate user
+$ aws cognito-idp initiate-auth --auth-flow USER_PASSWORD_AUTH --auth-parameters USERNAME=harleyguru1@gmail.com,PASSWORD=password123 --client-id 4tksc7kpcmqunbqps5koje9f5e
+
+6. Verify user
+$ aws cognito-idp get-user-attribute-verification-code --attribute-name email --access-token 
+
+$ aws cognito-idp verify-user-attribute --attribute-name email --code 432390 --access-token 
+
+7. Get User
+$ aws cognito-idp admin-get-user --user-pool-id us-west-2_uMKjTBLDG --username 555ca637-82da-4712-8c16-c4a66909b7ff

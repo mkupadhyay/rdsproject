@@ -1,0 +1,28 @@
+{
+  "arguments": { "input": { "id": "62bc7a86-e9fb-4128-8487-9b96efe8bdf4", "deviceToken": null } },
+  "source": null,
+  "identity": {
+    "sub": "62bc7a86-e9fb-4128-8487-9b96efe8bdf4",
+    "issuer": "https://cognito-idp.us-west-2.amazonaws.com/us-west-2_qi18C3Wc9",
+    "username": "62bc7a86-e9fb-4128-8487-9b96efe8bdf4",
+    "claims": {
+      "sub": "62bc7a86-e9fb-4128-8487-9b96efe8bdf4",
+      "cognito:groups": ["Candidate"],
+      "email_verified": false,
+      "iss": "https://cognito-idp.us-west-2.amazonaws.com/us-west-2_qi18C3Wc9",
+      "cognito:username": "62bc7a86-e9fb-4128-8487-9b96efe8bdf4",
+      "given_name": "1 ",
+      "aud": "59hhcoofa9ll9fi2us4hvpr30k",
+      "event_id": "def7d5cc-2d6d-11e9-9579-3b2759267b8a",
+      "token_use": "id",
+      "auth_time": 1549828552,
+      "exp": 1549832152,
+      "iat": 1549828552,
+      "family_name": "Can",
+      "email": "can1@hg.com"
+    },
+    "sourceIp": ["185.25.118.102"],
+    "defaultAuthStrategy": "ALLOW",
+    "groups": ["Candidate"]
+  }
+}

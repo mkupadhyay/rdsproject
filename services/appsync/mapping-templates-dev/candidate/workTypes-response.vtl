@@ -1,0 +1,5 @@
+#if($util.isNull(${ctx.source.workTypeIds}) || $ctx.source.workTypeIds.isEmpty())
+    $util.toJson([])
+#else
+    $util.toJson($context.result.data.WorkTypeTable-dev)
+#end

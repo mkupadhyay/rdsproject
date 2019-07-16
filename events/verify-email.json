@@ -1,0 +1,10 @@
+{
+    "resource": "/email/verify",
+    "queryStringParameters": {
+        "username": "555ca637-82da-4712-8c16-c4a66909b7ff",
+        "is_recruiter": false,
+        "token": "YgknaRL5ZB9KPpn3em19K3CKXOtKaR8ZEroXMF10oK5ES38Qb5o59i62Zed6r8X19X6xC0fPtFgGRhM74p54Y4Z58ZheH7C6oUE5fbUYVOBmb3wgONTEv9lEYY477SfG"
+    },
+    "body": null,
+    "isBase64Encoded": false
+}

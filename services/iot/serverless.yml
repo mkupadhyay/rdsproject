@@ -1,0 +1,314 @@
+service: iot
+
+frameworkVersion: "1.43.0"
+
+provider:
+  name: aws
+  runtime: nodejs8.10
+  region: us-east-1
+  stage: dev
+  memorySize: ${self:custom.memSize.${self:custom.stage}}
+  profile: ams-backend
+  # profile: fliphire
+  versionFunctions: false
+  environment:
+    AWS_SECRET_STORE_ARN: ${cf:db-${self:custom.stage}.MasterUserSecret}
+    DB_CLUSTER_ARN: ${cf:db-${self:custom.stage}.DBClusterArn}
+    DB_NAME: ${cf:db-${self:custom.stage}.DBName}
+    ADMIN_PASSWORD: admin123
+    STAGE: ${self:custom.stage}
+    AWSREGION: ${self:provider.region}
+    IDENTITY_POOL_ID: ${cf:iot-${self:custom.stage}.IdentityPoolId}
+    APPSYNC_ENDPOINT: ${cf:appsync-${self:custom.stage}.GraphQlApiUrl}
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - secretsmanager:*
+      Resource:
+        - "*"
+    - Effect: "Allow"
+      Action:
+        - rds-data:*
+      Resource:
+        - "*"
+    - Effect: "Allow"
+      Action:
+        - dynamodb:*
+      Resource: "*"
+    - Effect: "Allow"
+      Action:
+        - cognito-idp:*
+      Resource: "*"
+    - Effect: "Allow"
+      Action:
+        - ses:*
+      Resource: "*"
+    - Effect: "Allow"
+      Action:
+        - lambda:InvokeFunction
+        - lambda:InvokeAsync
+      Resource: "*"
+    - Effect: Allow
+      Action:
+        - iot:AttachPrincipalPolicy
+        - iot:DetachPrincipalPolicy
+        - iot:CreatePolicy
+      Resource:
+        - "*"
+
+package:
+  exclude:
+    - package-lock.json
+    - package.json
+
+functions:
+  notifyPresence:
+    handler: notify-presence.handler
+    description: "lambda trigger to notify presence of clients upon update in RecruiterTable & CandidateTable"
+    timeout: 60
+    events:
+      - stream:
+          type: dynamodb
+          batchSize: 1
+          startingPosition: LATEST
+          arn: ${cf:db-${self:custom.stage}.CandidateTableStreamArn}
+      - stream:
+          type: dynamodb
+          batchSize: 1
+          startingPosition: LATEST
+          arn: ${cf:db-${self:custom.stage}.RecruiterTableStreamArn}
+
+  presence:
+    handler: presence.handler
+    description: "handling presence of users from IoT action"
+    timeout: 60
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  memSize:
+    dev: 128
+    alpha: 128
+    beta: 128
+    prod: 512
+
+resources:
+  Resources:
+    ConnectPolicy:
+      Type: "AWS::IoT::Policy"
+      Properties:
+        PolicyName: IotConnectPolicy_${self:custom.stage}
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: "Allow"
+              Action:
+                - "iot:Connect"
+              Resource:
+                - "*"
+
+    PublicSubscribePolicy:
+      Type: "AWS::IoT::Policy"
+      Properties:
+        PolicyName: IotPublicSubscribePolicy_${self:custom.stage}
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: "Allow"
+              Action:
+                - "iot:Subscribe"
+              Resource:
+                {
+                  "Fn::Join":
+                    [
+                      "",
+                      [
+                        "arn:aws:iot:",
+                        { "Ref": "AWS::Region" },
+                        ":",
+                        { "Ref": "AWS::AccountId" },
+                        ":topicfilter/room/public/*",
+                      ],
+                    ],
+                }
+
+    PublicReceivePolicy:
+      Type: "AWS::IoT::Policy"
+      Properties:
+        PolicyName: IotPublicReceivePolicy_${self:custom.stage}
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: "Allow"
+              Action:
+                - "iot:Receive"
+              Resource:
+                {
+                  "Fn::Join":
+                    [
+                      "",
+                      [
+                        "arn:aws:iot:",
+                        { "Ref": "AWS::Region" },
+                        ":",
+                        { "Ref": "AWS::AccountId" },
+                        ":topic/room/public/*",
+                      ],
+                    ],
+                }
+
+    # LambdaInvokePermission:
+    #   Type: AWS::Lambda::Permission
+    #   Properties:
+    #     FunctionName: { Fn::GetAtt: [PresenceLambdaFunction, Arn] }
+    #     Action: lambda:InvokeFunction
+    #     Principal: iot.amazonaws.com
+
+    IoTRole:
+      Type: "AWS::IAM::Role"
+      Description: "Allow IoT to access to CloudWatch, DynamoDB and Lambda on your behalf"
+      Properties:
+        RoleName: IoTRole-${self:custom.stage}
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: "Allow"
+              Principal:
+                Service:
+                  - "iot.amazonaws.com"
+              Action:
+                - "sts:AssumeRole"
+        Policies:
+          - PolicyName: "CloudWatch-IoTRole-Policy"
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: "Allow"
+                  Action:
+                    - logs:*
+                  Resource: "*"
+          - PolicyName: "Dynamo-IoTRole-Policy"
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: "Allow"
+                  Action:
+                    - dynamodb:*
+                  Resource: "*"
+          - PolicyName: "Lambda-IoTRole-Policy"
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: "Allow"
+                  Action:
+                    - lambda:*
+                  Resource: "*"
+
+    # IoTDisconnectRule:
+    #   Type: AWS::IoT::TopicRule
+    #   Properties:
+    #     RuleName: Disconnected_${self:custom.stage}
+    #     TopicRulePayload:
+    #       RuleDisabled: false
+    #       Sql: "SELECT * FROM '$aws/events/presence/disconnected/+'"
+    #       Actions:
+    #         - Lambda:
+    #             FunctionArn: { Fn::GetAtt: [PresenceLambdaFunction, Arn] }
+
+    IdentityPool:
+      Type: "AWS::Cognito::IdentityPool"
+      Properties:
+        IdentityPoolName: iot_fliphire_${self:custom.stage}
+        AllowUnauthenticatedIdentities: false
+        CognitoIdentityProviders:
+          - ClientId: ${env:CLIENT_ID_REC}
+            ProviderName:
+              Fn::Join:
+                [
+                  "",
+                  [
+                    cognito-idp.,
+                    Ref: AWS::Region,
+                    ".amazonaws.com/",
+                    "${env:USER_POOL_ID}",
+                  ],
+                ]
+          - ClientId: ${env:CLIENT_ID_CAN}
+            ProviderName:
+              Fn::Join:
+                [
+                  "",
+                  [
+                    cognito-idp.,
+                    Ref: AWS::Region,
+                    ".amazonaws.com/",
+                    "${env:USER_POOL_ID}",
+                  ],
+                ]
+          - ClientId: ${env:CLIENT_ID_ADMIN}
+            ProviderName:
+              Fn::Join:
+                [
+                  "",
+                  [
+                    cognito-idp.,
+                    Ref: AWS::Region,
+                    ".amazonaws.com/",
+                    "${env:USER_POOL_ID}",
+                  ],
+                ]
+    # SupportedLoginProviders:
+    #   graph.facebook.com: ${self:custom.variables.facebook_app_id}
+    #   accounts.google.com: ${self:custom.variables.google_app_id}
+
+    IdentityPoolAuthRole:
+      Type: "AWS::IAM::Role"
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: "Allow"
+              Principal:
+                Federated:
+                  - "cognito-identity.amazonaws.com"
+              Action:
+                - "sts:AssumeRoleWithWebIdentity"
+              Condition:
+                StringEquals:
+                  cognito-identity.amazonaws.com:aud:
+                    Ref: IdentityPool
+                ForAnyValue:StringLike:
+                  cognito-identity.amazonaws.com:amr: authenticated
+        ManagedPolicyArns:
+          - arn:aws:iam::aws:policy/AWSIoTDataAccess
+        Path: "/"
+        Policies:
+          - PolicyName: iot_attach_policy
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - iot:AttachPolicy
+                    - iot:AttachPrincipalPolicy
+                    - iot:ListPrincipalPolicies
+                    - iot:ListAttachedPolicies
+                  Resource: "*"
+
+    IdentityPoolRoleAttachment:
+      Type: AWS::Cognito::IdentityPoolRoleAttachment
+      Properties:
+        IdentityPoolId:
+          Ref: IdentityPool
+        Roles:
+          authenticated:
+            Fn::GetAtt:
+              - IdentityPoolAuthRole
+              - Arn
+
+  Outputs:
+    IdentityPoolId:
+      Description: "The ID of the identity pool that is created."
+      Value:
+        Ref: IdentityPool
+      Export:
+        Name: IdentityPool-${self:custom.stage}

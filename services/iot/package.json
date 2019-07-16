@@ -1,0 +1,29 @@
+{
+  "name": "iot",
+  "version": "1.0.0",
+  "description": "iot microservice of fliphire system, this will be playing a role as a presence system for fliphire",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "iot",
+    "presence",
+    "fliphire"
+  ],
+  "author": "fliphire",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-amplify/auth": "^1.2.19",
+    "apollo-cache-inmemory": "^1.1.0",
+    "apollo-client": "^2.0.3",
+    "apollo-link": "^1.0.3",
+    "apollo-link-http": "^1.2.0",
+    "aws-appsync": "^1.0.0",
+    "es6-promise": "^4.1.1",
+    "graphql": "^0.11.7",
+    "graphql-tag": "^2.9.2",
+    "isomorphic-fetch": "^2.2.1",
+    "node-fetch": "^2.2.0",
+    "ws": "^3.3.1"
+  }
+}

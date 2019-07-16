@@ -1,0 +1,46 @@
+{
+  "arguments": {},
+  "source": {
+    "readStatus": false,
+    "recruiterId": "82a6d29c-b342-4c22-8dba-f4054fb9f5ba",
+    "thumbnail": "http://ronaldo.com",
+    "candidateStatus": "Online",
+    "recruiterStatus": "Offline",
+    "video": "http://breanne.org",
+    "createdAt": "2018-09-22T21:01:50.669Z",
+    "jobId": "1cf65ba0-d877-4fdc-bb4e-1de7c9ad2fe0",
+    "ready": false,
+    "titleForVideo": "Quos eos dolores magni.",
+    "candidateId": "3a796a44-9f6a-400f-b85c-70756806e42c",
+    "status": "Pending",
+    "updatedAt": "2018-10-09T04:11:47.321Z"
+  },
+  "identity": {
+    "sub": "3a796a44-9f6a-400f-b85c-70756806e42c",
+    "issuer": "https://cognito-idp.us-west-2.amazonaws.com/us-west-2_9tv4CVvNb",
+    "username": "3a796a44-9f6a-400f-b85c-70756806e42c",
+    "claims": {
+      "sub": "3a796a44-9f6a-400f-b85c-70756806e42c",
+      "cognito:groups": ["Candidate"],
+      "email_verified": false,
+      "iss": "https://cognito-idp.us-west-2.amazonaws.com/us-west-2_9tv4CVvNb",
+      "phone_number_verified": false,
+      "cognito:username": "3a796a44-9f6a-400f-b85c-70756806e42c",
+      "custom:isRecruiter": "0",
+      "given_name": "Jameson",
+      "aud": "2k9m53rsh9fganq3tj8pod593o",
+      "event_id": "d6211c72-da16-11e8-86bf-d3e4644859c8",
+      "custom:zip": "97456",
+      "token_use": "id",
+      "auth_time": 1540665225,
+      "phone_number": "+380123534015",
+      "exp": 1540668825,
+      "iat": 1540665225,
+      "family_name": "Grady",
+      "email": "Celestine.Cronin@yahoo.com"
+    },
+    "sourceIp": ["185.25.118.102"],
+    "defaultAuthStrategy": "ALLOW",
+    "groups": ["Candidate"]
+  }
+}

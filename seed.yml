@@ -1,0 +1,11 @@
+before_compile:
+  - echo "Before compile"
+
+before_build:
+  - echo "Before build"
+
+before_deploy:
+  - echo "Before deploy"
+
+after_deploy:
+  - echo "After deploy"

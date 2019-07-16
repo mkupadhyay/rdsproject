@@ -1,0 +1,52 @@
+{
+  "arguments": {
+    "jobs": [
+      "2426d998-911d-4735-9be0-12d856ec1261",
+      "29cf9c84-a1d8-432d-b25d-5e31b965176f",
+      "320b464b-6644-4fe5-977c-f234ba9730d2",
+      "3430b81e-e0dc-4ac6-bedd-44b5c5481565",
+      "38e172fd-8266-442c-a16c-7feed4f0fd25",
+      "3a4580aa-dd7b-4316-939b-33c3a660d4b2",
+      "4603c65f-0e47-4f23-931a-67a8ce6c2dc1",
+      "4999c3a8-183f-4408-8205-fbca6f1fab85",
+      "667ee884-5d56-445b-bded-915784ea5f9b",
+      "67f46884-1715-4e8e-bfed-9e41b19bc8da",
+      "6ee1d162-b7a6-4dde-9cf0-eb5ab2653606",
+      "899ae401-6dc6-4ed4-9035-76fdee5ee26b",
+      "8ec66183-f8c0-40ad-bcee-46bea177483a",
+      "901194f9-b23d-4c17-9186-4c71ca60e287",
+      "9f0816c9-43bf-4751-aa97-5167c1157750",
+      "afca0641-70f7-45d4-999c-df6f62f2f2ee",
+      "b38e92e2-3699-45c4-a6b2-d2ef38805222",
+      "b944f610-040c-40da-944e-933bd18d527c",
+      "c3442d9b-c945-4646-ac38-96b5128f9cce",
+      "c6b045c3-21f2-493d-a0f4-021e0510f689"
+    ]
+  },
+  "source": null,
+  "identity": {
+    "sub": "aa2c624f-7b49-40b4-a417-89e756247a77",
+    "issuer": "https://cognito-idp.us-west-2.amazonaws.com/us-west-2_qi18C3Wc9",
+    "username": "aa2c624f-7b49-40b4-a417-89e756247a77",
+    "claims": {
+      "sub": "aa2c624f-7b49-40b4-a417-89e756247a77",
+      "cognito:groups": ["Recruiter"],
+      "email_verified": false,
+      "iss": "https://cognito-idp.us-west-2.amazonaws.com/us-west-2_qi18C3Wc9",
+      "cognito:username": "aa2c624f-7b49-40b4-a417-89e756247a77",
+      "custom:isRecruiter": "1",
+      "given_name": "Pravesh",
+      "aud": "45ek0skueuidb2aof6m97c0u4e",
+      "event_id": "79dc1c8a-41c2-11e9-b535-4909332fb692",
+      "token_use": "id",
+      "auth_time": 1552063913,
+      "exp": 1552067513,
+      "iat": 1552063913,
+      "family_name": "Rec",
+      "email": "pravesh@hiregoat.com"
+    },
+    "sourceIp": ["77.120.105.173"],
+    "defaultAuthStrategy": "ALLOW",
+    "groups": ["Recruiter"]
+  }
+}

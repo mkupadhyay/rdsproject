@@ -1,0 +1,8 @@
+{
+  "version": "2017-02-28",
+  "operation": "GetItem",
+  "key": {
+    "candidateId": $util.dynamodb.toDynamoDBJson($ctx.args.candidateId),
+    "jobId": $util.dynamodb.toDynamoDBJson($ctx.args.jobId),
+  },
+}

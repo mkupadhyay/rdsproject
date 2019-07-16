@@ -1,0 +1,10 @@
+{
+  "arguments": {
+    "statuses": ["Pending", "Accepted", "Interview"],
+    "first": 1,
+    "after": null
+  },
+  "source": {
+    "id": "81fc08d4-3112-405b-b7a3-ffe6988a00a3"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "arguments": { "input": { "candidateId": "62bc7a86-e9fb-4128-8487-9b96efe8bdf4", "jobId": "02369388-f632-4dd2-b876-3ff51b4a5b42", "status": "Accepted" } },
+  "source": null,
+  "identity": {
+    "sub": "11cdff33-c453-479f-b37b-c3281b8ea4c9",
+    "issuer": "https://cognito-idp.us-west-2.amazonaws.com/us-west-2_qi18C3Wc9",
+    "username": "11cdff33-c453-479f-b37b-c3281b8ea4c9",
+    "claims": {
+      "sub": "11cdff33-c453-479f-b37b-c3281b8ea4c9",
+      "cognito:groups": ["Recruiter"],
+      "email_verified": false,
+      "iss": "https://cognito-idp.us-west-2.amazonaws.com/us-west-2_qi18C3Wc9",
+      "cognito:username": "11cdff33-c453-479f-b37b-c3281b8ea4c9",
+      "custom:isRecruiter": "1",
+      "given_name": "Rec",
+      "aud": "45ek0skueuidb2aof6m97c0u4e",
+      "event_id": "8bdaea08-3492-11e9-abd4-45cbf56a5a7f",
+      "token_use": "id",
+      "auth_time": 1550613962,
+      "exp": 1550617562,
+      "iat": 1550613962,
+      "family_name": "4",
+      "email": "rec4@hg.com"
+    },
+    "sourceIp": ["185.25.118.102"],
+    "defaultAuthStrategy": "ALLOW",
+    "groups": ["Recruiter"]
+  }
+}

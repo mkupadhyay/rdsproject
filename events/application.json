@@ -1,0 +1,157 @@
+{
+  "Records": [
+    {
+      "eventID": "d220f92576967310edf2a16aebe18aa9",
+      "eventName": "REMOVE",
+      "eventVersion": "1.1",
+      "eventSource": "aws:dynamodb",
+      "awsRegion": "us-west-2",
+      "dynamodb": {
+        "ApproximateCreationDateTime": 1553962766,
+        "Keys": {
+          "jobId": {
+            "S": "65518f82-5473-4a7e-927f-3283947f387b"
+          },
+          "candidateId": {
+            "S": "a7b4e07e-9bf3-47ff-8d9c-1ec28df793ed"
+          }
+        },
+        "OldImage": {
+          "readStatus": {
+            "BOOL": false
+          },
+          "recruiterId": {
+            "S": "5b81e737-b986-4504-9268-42c27a23fb14"
+          },
+          "createdAt": {
+            "S": "2019-03-13T00:06:25.847Z"
+          },
+          "jobId": {
+            "S": "65518f82-5473-4a7e-927f-3283947f387b"
+          },
+          "candidateId": {
+            "S": "a7b4e07e-9bf3-47ff-8d9c-1ec28df793ed"
+          },
+          "profileVideoId": {
+            "S": "5b03cb92-6414-410e-9cb8-5e1df263fc25"
+          },
+          "roomId": {
+            "S": "b6e94c9c-d6be-433b-8d51-039ed1b5cb95"
+          },
+          "status": {
+            "S": "CandidateExchanged"
+          },
+          "updatedAt": {
+            "S": "2019-03-13T18:17:05.161Z"
+          }
+        },
+        "SequenceNumber": "620184000000000002822047934",
+        "SizeBytes": 416,
+        "StreamViewType": "NEW_AND_OLD_IMAGES"
+      },
+      "eventSourceARN": "arn:aws:dynamodb:us-west-2:229344080863:table/ApplicationTable-beta/stream/2018-12-10T06:15:23.220"
+    },
+    {
+      "eventID": "72c469e158c6cd4a03b4dbea681d8370",
+      "eventName": "REMOVE",
+      "eventVersion": "1.1",
+      "eventSource": "aws:dynamodb",
+      "awsRegion": "us-west-2",
+      "dynamodb": {
+        "ApproximateCreationDateTime": 1553962766,
+        "Keys": {
+          "jobId": {
+            "S": "36427bdc-65da-41da-b45a-4abe89181b5f"
+          },
+          "candidateId": {
+            "S": "cada439d-475a-4109-8c64-64d1c813c522"
+          }
+        },
+        "OldImage": {
+          "readStatus": {
+            "BOOL": false
+          },
+          "recruiterId": {
+            "S": "6f802d82-100c-48ae-b2c0-8d7a04b3b0f3"
+          },
+          "createdAt": {
+            "S": "2019-03-13T21:30:12.432Z"
+          },
+          "jobId": {
+            "S": "36427bdc-65da-41da-b45a-4abe89181b5f"
+          },
+          "candidateId": {
+            "S": "cada439d-475a-4109-8c64-64d1c813c522"
+          },
+          "profileVideoId": {
+            "S": "74190da2-3f2a-4607-a2e3-51d6981cca7a"
+          },
+          "roomId": {
+            "S": "43affa24-f8e6-4060-bb0b-f60a609f0b02"
+          },
+          "status": {
+            "S": "CandidateExchanged"
+          },
+          "updatedAt": {
+            "S": "2019-03-13T22:01:51.419Z"
+          }
+        },
+        "SequenceNumber": "620184100000000002822047945",
+        "SizeBytes": 416,
+        "StreamViewType": "NEW_AND_OLD_IMAGES"
+      },
+      "eventSourceARN": "arn:aws:dynamodb:us-west-2:229344080863:table/ApplicationTable-beta/stream/2018-12-10T06:15:23.220"
+    },
+    {
+      "eventID": "25afe3478f27fbf3a9a8d978cd6d3d58",
+      "eventName": "REMOVE",
+      "eventVersion": "1.1",
+      "eventSource": "aws:dynamodb",
+      "awsRegion": "us-west-2",
+      "dynamodb": {
+        "ApproximateCreationDateTime": 1553962766,
+        "Keys": {
+          "jobId": {
+            "S": "36427bdc-65da-41da-b45a-4abe89181b5f"
+          },
+          "candidateId": {
+            "S": "a7b4e07e-9bf3-47ff-8d9c-1ec28df793ed"
+          }
+        },
+        "OldImage": {
+          "readStatus": {
+            "BOOL": false
+          },
+          "recruiterId": {
+            "S": "6f802d82-100c-48ae-b2c0-8d7a04b3b0f3"
+          },
+          "createdAt": {
+            "S": "2019-03-13T21:50:21.133Z"
+          },
+          "jobId": {
+            "S": "36427bdc-65da-41da-b45a-4abe89181b5f"
+          },
+          "candidateId": {
+            "S": "a7b4e07e-9bf3-47ff-8d9c-1ec28df793ed"
+          },
+          "profileVideoId": {
+            "S": "60fdc43b-6684-4423-88e1-8cbfdf60f077"
+          },
+          "roomId": {
+            "S": "b005c494-ddd4-49be-a1fa-1b436f7d6605"
+          },
+          "status": {
+            "S": "CandidateExchanged"
+          },
+          "updatedAt": {
+            "S": "2019-03-13T21:58:11.667Z"
+          }
+        },
+        "SequenceNumber": "620184200000000002822047997",
+        "SizeBytes": 416,
+        "StreamViewType": "NEW_AND_OLD_IMAGES"
+      },
+      "eventSourceARN": "arn:aws:dynamodb:us-west-2:229344080863:table/ApplicationTable-beta/stream/2018-12-10T06:15:23.220"
+    }
+  ]
+}

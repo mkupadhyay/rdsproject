@@ -1,0 +1,574 @@
+# name: Untitled
+
+# matched jobs for this candidate
+type Candidate implements User {
+
+    # mapped with sub in user pool
+    id: ID!
+    # mapped with user name in user pool
+    username: ID!
+    # mapped with email in user pool
+    email: String!
+    # mapped with given_name  in user pool
+    firstName: String
+    # mapped with family_name in user pool
+    lastName: String
+    # mapped with phone_number in user pool
+    phone: String
+    # mapped with zip in user pool
+    zip: String
+    # indicates user is in now mode, this is not stored in user pool
+    status: Status
+    # date time user entered in now mode, this is not stored in user pool
+    onlineTime: String
+    appStatus: AppStatus
+    createdAt: String
+    updatedAt: String
+    deleted: Boolean
+    devices: [Device!]
+    # URL to the resume of this candidate
+    resumeIds: String
+    # candidate location's latitude, this might be calculated from zip code automatically
+    latitude: Float
+    # candidate location's longitude, this might be calculated from zip code automatically
+    longitude: Float
+    # work radius to be hired for the job
+    radius: Int
+    # current status
+    currentStatusId: String
+    # education level of this candidate
+    educationId: String
+    # fixed compensation
+    salary: String
+    type: CandidateType
+    # all proposals this candidate did
+    proposals: [Application]
+    # all videos of this candidate
+    videos: [Video]
+    industryIds: [ID]
+    # available work types, this will be array of ID references to existing work types in our platorm
+    workTypeIds: [ID]
+    # all past working history
+    experiences: [Experience]
+    # experiences for all available career categories
+    careers: [Career]
+    dismatches: [Dismatch]
+    industries: [Industry]
+    workTypes: [WorkType]
+    jobs: [Job]
+    resumes: [Resume]
+    education: Education
+    currentStatus: CurrentStatus
+    weight: Weight!
+    attachment: Attachment
+    invitations: [Invitation]
+}
+
+type Recruiter implements User {
+
+    # mapped with sub in user pool
+    id: ID!
+    # mapped with user name in user pool
+    username: ID!
+    # mapped with email in user pool
+    email: String!
+    # mapped with given_name  in user pool
+    firstName: String
+    # mapped with family_name in user pool
+    lastName: String
+    # mapped with phone_number in user pool
+    phone: String
+    # mapped with zip in user pool
+    zip: String
+    # indicates user is in now mode, this is not stored in user pool
+    status: Status
+    # date time user entered in now mode, this is not stored in user pool
+    onlineTime: String
+    appStatus: AppStatus
+    createdAt: String
+    updatedAt: String
+    deleted: Boolean
+    devices: [Device!]
+    # indicates if this is agency or company
+    type: RecruiterType
+    # company name
+    companyName: String
+    # company phone number
+    companyPhone: String
+    # URL to company site
+    companyURL: String
+    companyTwitterURL: String
+    companyFacebookURL: String
+    # reason why should work for this company
+    reason: String
+    # industry of this company
+    industryId: ID
+    titleId: String
+    nextOnlineTime: String
+    # all jobs posted by this recruiter
+    jobs: [Job]
+    # owner company or agency recruiter if this recruiter has been employed by
+    owner: Recruiter!
+    # agency recruiters this company or agency recruiter are using
+    agencies: [Recruiter]
+    industry: Industry
+    title: Title
+    videos: [Video]
+    video: Video
+    attachment: Attachment
+    moreQuestions: [Video]
+}
+
+type Job {
+
+    id: ID!
+    # job title
+    title: String!
+    # job description
+    description: String
+    # estimated job duration
+    duration: String
+    # number of positions
+    numberOfPositions: String
+    # compensation, it might be fixed [3000] or ranged one [1000-5000]
+    compensation: String
+    # experiences in above category, i.e: [0-5]
+    careerExperience: String
+    # job's required location ZIP code
+    zip: String
+    # latitude for job location
+    latitude: Float
+    # longitude for job location
+    longitude: Float
+    location: String
+    selling: String
+    toWhom: String
+    status: String
+    # poster id
+    recruiterId: ID!
+    # required career category, its reference id to pre-defined career category
+    careerCategoryId: ID
+    # specifies employment type, its reference id to pre-defined employment type
+    employmentTypeId: ID
+    salaryTypeId: ID
+    incentiveIds: String
+    benefitIds: String
+    requirementIds: String
+    categoryTypeId: ID
+    videoId: ID
+    _score: Float
+    createdAt: String
+    updatedAt: String
+    deleted: Boolean
+    # poster of this job
+    recruiter: Recruiter!
+    applications: [Application]
+    # questions
+    questions: [Question!]
+    employmentType: WorkType
+    careerCategory: CareerCategory
+    salaryType: SalaryType
+    incentives: [Incentive]
+    benefits: [Benefit]
+    requirements: [Requirement]
+    categoryType: CategoryType
+    video: Video
+    attachments: [Attachment]
+    invitations: [Invitation]
+}
+
+type Application {
+
+    # candidate id assocaited with this application
+    candidateId: ID!
+    # job id associated with this application
+    jobId: ID!
+    recruiterId: ID!
+    # current status of this application
+    status: MatchStatus
+    # indicates recruiter is ready to get interview with this candidate currently
+    ready: Boolean
+    profileVideoId: ID
+    preferred: Boolean
+    roomId: ID
+    roomToken: String
+    readStatus: Boolean
+    createdAt: String
+    updatedAt: String
+    deleted: Boolean
+    # candidate applied
+    candidate: Candidate!
+    # job the candidate applied
+    job: Job!
+    profileVideo: Video
+    video: Video
+    attachments: [Attachment]
+    moreQuestions: [Video]
+}
+
+type Question {
+
+    id: ID!
+    # question text
+    question: String!
+    # if its true, it means yes is qualified answer for this question
+    answer: Boolean
+    # associated job id
+    jobId: ID!
+    createdAt: String
+    updatedAt: String
+    deleted: Boolean
+}
+
+interface User {
+
+    # mapped with sub in user pool
+    id: ID!
+    # mapped with user name in user pool
+    username: ID!
+    # mapped with email in user pool
+    email: String!
+    # mapped with given_name  in user pool
+    firstName: String
+    # mapped with family_name in user pool
+    lastName: String
+    # mapped with phone_number in user pool
+    phone: String
+    # mapped with zip in user pool
+    zip: String
+    # indicates user is in now mode, this is not stored in user pool
+    status: Status
+    # date time user entered in now mode, this is not stored in user pool
+    onlineTime: String
+    appStatus: AppStatus
+    createdAt: String
+    updatedAt: String
+    deleted: Boolean
+    devices: [Device!]
+}
+
+schema {
+
+    mutation: Mutation
+    subscription: Subscription
+    query: Query
+}
+
+type Query {
+
+}
+
+type Mutation {
+
+}
+
+type Subscription {
+
+}
+
+enum MatchStatus {
+    Pending
+    More
+    Declined
+    Accepted
+    Withdrawn
+    Waiting
+    IsReady
+    ReadyForInterview
+    Interview
+    Interviewing
+    Postponed
+    Missed
+    Interrupted
+    InterviewFinished
+    RecruiterExchanged
+    CandidateExchanged
+    Exchanged
+    NotExchanged
+}
+
+type Video {
+
+    id: ID!
+    # specify if video is specific one or generic one
+    type: VideoType!
+    title: String
+    # video URL
+    video: String
+    thumbnail: String
+    videoURL: URL
+    thumbnailURL: URL
+    question: String
+    # candidate owned this video
+    candidateId: ID
+    recruiterId: ID
+    jobId: ID
+    createdAt: String
+    updatedAt: String
+    deleted: Boolean
+    applications: [Application]
+    owners: [Attachment]
+}
+
+enum VideoType {
+    ProfileGeneric
+    ProfileSpecific
+    Job
+    Recruiter
+    Application
+    More
+}
+
+scalar ID
+
+enum RecruiterType {
+    Company
+    Agency
+}
+
+type Career {
+
+    id: ID!
+    # career category, this will be id of category item
+    categoryId: ID!
+    # career experience, this will be experience value: 0-2, 1-5 etc
+    experience: String!
+    # candidate id owned this career
+    candidateId: ID!
+    createdAt: String
+    updatedAt: String
+    deleted: Boolean
+    category: CareerCategory
+}
+
+type Experience {
+
+    id: ID!
+    # experience title
+    title: String!
+    # company experienced at
+    company: String!
+    # indicates whether the candidate is working at this company currently
+    isCurrent: Boolean
+    # start date worked at this company
+    startDate: String
+    # end date worked at this company
+    endDate: String
+    # owner candidate id of this experience
+    candidateId: ID!
+    createdAt: String
+    updatedAt: String
+    deleted: Boolean
+}
+
+enum Status {
+    Online
+    Offline
+    Invisible
+    Away
+}
+
+type Industry {
+
+    id: ID!
+    # industry value
+    value: String
+    # indicates whether this industry is enabled or not in our platform
+    status: Boolean
+}
+
+type WorkType {
+
+    id: ID!
+    value: String
+    status: Boolean
+}
+
+type CareerCategory {
+
+    id: ID!
+    value: String
+    status: Boolean
+    types: [CategoryType]
+}
+
+type Dismatch {
+
+    candidateId: ID!
+    jobId: ID!
+    status: DismatchStatus
+}
+
+type CategoryType {
+
+    id: ID!
+    value: String
+    status: Boolean
+    categoryId: ID!
+    category: CareerCategory!
+}
+
+type SalaryType {
+
+    id: ID!
+    value: String
+    status: Boolean
+}
+
+type Incentive {
+
+    id: ID!
+    value: String
+    status: Boolean
+}
+
+type Benefit {
+
+    id: ID!
+    value: String
+    status: Boolean
+}
+
+type Requirement {
+
+    id: ID!
+    value: String
+    status: Boolean
+}
+
+type CurrentStatus {
+
+    id: ID!
+    value: String
+    status: Boolean
+}
+
+type Education {
+
+    id: ID!
+    value: String
+    status: Boolean
+}
+
+type Resume {
+
+    id: ID!
+    value: String
+    status: Boolean
+}
+
+type Title {
+
+    id: ID!
+    value: String
+    status: Boolean
+}
+
+enum JobStatus {
+    Expired
+    Deleted
+    Active
+    Draft
+    Filled
+    Canceled
+}
+
+enum DismatchStatus {
+    Disliked
+    Disqualified
+}
+
+type Invitation {
+
+    id: ID!
+    jobId: ID!
+    email: String!
+    candidateId: ID
+    createdAt: String
+    updatedAt: String
+    deleted: Boolean
+    job: Job!
+    candidate: Candidate!
+}
+
+enum CandidateType {
+    HGC
+    CC
+}
+
+type URL {
+
+    url: String
+    thumbnail: String
+    blur: String
+}
+
+type Weight {
+
+    id: ID!
+    employmentTypeWeight: Int
+    salaryWeight: Int
+    experienceWeight: Int
+    locationWeight: Int
+    candidateId: ID
+    recruiterId: ID
+    createdAt: String
+    updatedAt: String
+}
+
+type Count {
+
+    total: Int
+    online: Int
+}
+
+enum Method {
+    Get
+    Post
+}
+
+type Attachment {
+
+    id: ID!
+    type: VideoType!
+    videoId: ID!
+    candidateId: ID
+    recruiterId: ID
+    jobId: ID
+    deleted: Boolean
+    createdAt: String
+    updatedAt: String
+    candidate: Candidate
+    recruiter: Recruiter!
+    job: Job!
+    application: Application!
+    video: Video!
+}
+
+enum Platform {
+    iOS
+    Android
+}
+
+enum AppStatus {
+    Active
+    Inactive
+}
+
+type Device {
+
+    id: ID!
+    token: String!
+    endpointArn: String!
+    platform: Platform!
+    userId: ID!
+    userType: UserType!
+    deleted: Boolean
+    createdAt: String
+    updatedAt: String
+}
+
+enum UserType {
+    Candidate
+    Recruiter
+}

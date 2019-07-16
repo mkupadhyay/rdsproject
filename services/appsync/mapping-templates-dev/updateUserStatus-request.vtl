@@ -1,0 +1,32 @@
+{
+  "version": "2017-02-28",
+  "operation": "UpdateItem",
+  "key": {
+    "id": $util.dynamodb.toDynamoDBJson($ctx.args.id),
+  },
+
+  #set($now = $util.time.nowISO8601())
+
+  #set($exp = "SET #s = :s, #u = :u")
+  #set($expNames = {"#s": "status", "#u": "updatedAt"})
+  #set($expValues = {":s": $util.dynamodb.toDynamoDB($ctx.args.status), ":u": $util.dynamodb.toDynamoDB($now)})
+
+  #if(!$util.isNullOrEmpty($ctx.args.status) && $ctx.args.status == "Online")
+    $util.qr($expNames.put("#o", "onlineTime"))
+    $util.qr($expValues.put(":o", $util.dynamodb.toDynamoDB($now)))
+    #set($exp = "${exp}, #o = :o")
+  #end
+
+  "update": {
+    "expression": "${exp}",
+    "expressionNames": $utils.toJson($expNames),
+    "expressionValues": $utils.toJson($expValues),
+  },
+
+  "condition": {
+    "expression": "attribute_exists(#id)",
+    "expressionNames": {
+      "#id": "id"
+    }
+  }
+}

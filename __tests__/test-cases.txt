@@ -1,0 +1,17 @@
+# ask
+
+mutation ask {
+  ask(jobs: ["35fdf99e-457b-4186-bbf1-1706d7e226ca", "0c3b2e0b-5f4b-4dc3-9529-09182ea0cb7c", "29cf9c84-a1d8-432d-b25d-5e31b965176f"]) {
+    candidateId
+    jobId
+    status
+  }
+}
+
+mutation updateApplicationStatus {
+  updateApplication(input: {jobId: "35fdf99e-457b-4186-bbf1-1706d7e226ca", candidateId: "", status: Waiting}) {
+    candidateId
+    jobId
+    status
+  }
+}

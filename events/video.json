@@ -1,0 +1,78 @@
+{
+  "Records": [
+    {
+      "eventID": "869521ab82fe42e4f3fc8004dba3d685",
+      "eventName": "MODIFY",
+      "eventVersion": "1.1",
+      "eventSource": "aws:dynamodb",
+      "awsRegion": "us-west-2",
+      "dynamodb": {
+        "ApproximateCreationDateTime": 1544864280,
+        "Keys": {
+          "id": {
+            "S": "78268e43-2dc9-402b-8f69-83369e4b3984"
+          }
+        },
+        "NewImage": {
+          "createdAt": {
+            "S": "2018-12-15T08:54:20.944Z"
+          },
+          "thumbnail": {
+            "S": "thumb_1544864053803.png"
+          },
+          "deleted": {
+            "BOOL": true
+          },
+          "id": {
+            "S": "78268e43-2dc9-402b-8f69-83369e4b3984"
+          },
+          "video": {
+            "S": "vid_1544864053803.mp4"
+          },
+          "candidateId": {
+            "S": "593bf950-7676-45ff-b1ac-203a46d311c2"
+          },
+          "title": {
+            "S": "My Video 5"
+          },
+          "type": {
+            "S": "ProfileGeneric"
+          },
+          "updatedAt": {
+            "S": "2018-12-15T08:54:20.944Z"
+          }
+        },
+        "OldImage": {
+          "createdAt": {
+            "S": "2018-12-15T08:54:20.944Z"
+          },
+          "thumbnail": {
+            "S": "thumb_1544864053803.png"
+          },
+          "id": {
+            "S": "78268e43-2dc9-402b-8f69-83369e4b3984"
+          },
+          "video": {
+            "S": "vid_1544864053803.mp4"
+          },
+          "candidateId": {
+            "S": "593bf950-7676-45ff-b1ac-203a46d311c2"
+          },
+          "title": {
+            "S": "My Video 5"
+          },
+          "type": {
+            "S": "ProfileGeneric"
+          },
+          "updatedAt": {
+            "S": "2018-12-15T08:54:20.944Z"
+          }
+        },
+        "SequenceNumber": "128955500000000000865005224",
+        "SizeBytes": 516,
+        "StreamViewType": "NEW_AND_OLD_IMAGES"
+      },
+      "eventSourceARN": "arn:aws:dynamodb:us-west-2:229344080863:table/VideoTable-alpha/stream/2018-12-13T10:06:59.296"
+    }
+  ]
+}

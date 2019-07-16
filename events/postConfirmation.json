@@ -1,0 +1,22 @@
+{
+  "version": "1",
+  "region": "us-west-2",
+  "userPoolId": "us-west-2_qi18C3Wc9",
+  "userName": "00e08184-cd03-44b7-90a5-8c16629a0694",
+  "callerContext": {
+    "awsSdkVersion": "aws-sdk-unknown-unknown",
+    "clientId": "45ek0skueuidb2aof6m97c0u4e"
+  },
+  "triggerSource": "PostConfirmation_ConfirmSignUp",
+  "request": {
+    "userAttributes": {
+      "sub": "00e08184-cd03-44b7-90a5-8c16629a0694",
+      "cognito:email_alias": "rec23@hg.com",
+      "email_verified": "false",
+      "cognito:user_status": "CONFIRMED",
+      "custom:isRecruiter": "1",
+      "email": "rec23@hg.com"
+    }
+  },
+  "response": {}
+}

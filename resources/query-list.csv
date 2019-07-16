@@ -1,0 +1,194 @@
+DB Operation,Module,Source Location,Description,IN,OUT,Procedure Name,Procedure call,Status,Implemented
+Create a device in Device table,utilities,sns-helper.js/storeEndpintArn:147,Store a device if  there is no existing device item in DB,"token, endpoint_arn, platform, user_id, user_type",void,usp_create_device,"call usp_create_device('dxkjngh134','Endpointam',1,1);",Done,
+Create the user record in Users table,handlers,handler.js/postConfirmation:213,"Migrate the user from User Pool to DB, 
+it means we create user record into our DB from the info
+registered in Cognito User Pool","id, email, first_name, last_name, phone, zip, type",void,usp_insert_users,"call `usp_insert_users`('ravi','ravi@test.com','firstname','lastname',8,'9959999999','42086');",Done,
+Delete a job from Job table,handlers,job.js/deleteItem,Delete a job from Job table,"id, is_hard",void,usp_delete_job,call usp_delete_job(1);,Done,
+Delete video from Video table,handlers,application.js/deleteItem:59,"Hard delete or soft delete video from Video table, 
+In the soft delete case, we just update the attribute ""deleted""
+as true, and we should those records some time later
+(for example, 1month later) permanently",id,void,usp_delete_video,call usp_delete_video(1);,Done,
+Fetch job details associated with specified job id,handlers,fetch-job.js/handler:25,Fetch job associated with specified job id from Job table,id,"id, title, description, duration, 
+number_of_positions, compensation, 
+career_experience, zip, latitude, longitude, 
+location, selling, to_whom",usp_get_job,call usp_get_job(1);,Done,
+Get a device by token of a specific user,utilities,push-helper.js/getEndpointArn:48,Get a device associated with a specific token of the user,"user_id, token",*,usp_get_device,"call usp_get_device(1,'efadsf3rq32');",Done,
+Get all devices of a specific user,utilities,push-helper.js/send:87,Get all devices of a specific user,id,*,usp_get_devices,call usp_get_devices(1);,Done,
+Get applications of a specific user,iot,"notify-presence.js/handler:101,
+notify-presence.js/handler:140",Get all applications of a specific user,id,*,usp_get_applications,call usp_get_applications(1);,Done,
+Get invitation id of user from Invitation table,handlers,handler.js/postConfirmation:175,Get id of invitation record for this user from Invitation table,email,id,usp_get_invitaion,call usp_get_invitation('ravi@gmail.com');,Done,
+"Get more questions of specific application
+from Video table",handlers,application.js/getMoreQuestions:40,"There are multiple type of videos in our system.
+We are storing more questions for the applications as video.
+Here, we will get all more questions related with a specific
+application","candidate_id, job_id, type",*,usp_get_more_questions,"call usp_get_more_questions(1,1,1);",Done,
+Get user info from Users table,handlers,email.js/verify:38,Get specified user from Users table to get confirmation code,id,id,usp_get_user,call usp_get_user(1);,Done,
+Register an invitation in Invitation table,handlers,invitation.js/register:43,Register an invitation into Invitation table,"id, email, job_id",void,usp_insert_invitation,"call usp_insert_invitation(1,'ravi@gmail.com',1);",Done,
+Save confirm code in DB table,handlers,handler.js/sendEmail:54,Save confirmation code in Users table,token,void,usp_save_token,"call usp_save_token(1,'x34fztdtad509jkdfa09w');",Done,
+Update a device in Device table,utilities,sns-helper.js/storeEndpointArn: 120,Update a device,"id, endpoint_arn",void,usp_update_device,"call usp_update_device(3,'EndpointAM1');",Done,
+Update application in Application table,handlers,video.js/deleteApplications:119,"We will call this to soft delete a referring application 
+record of application video (in a word, this is trigger action
+upon application video deletion in order to do cascade 
+delete all referring applications, so I guess it might be
+implemented by MySQL trigger)","candidate_id, job_id, deleted, profile_video_id",void,usp_update_application,"call usp_update_application(1,1,1,1);",Done,
+Update invitation record for this user,handlers,handler.js/postConfirmation:242,"Update invitation record for this user, we put candidate's id
+into its invitation record (origin invitation record had no 
+id field)",id,void,usp_update_invitation,"call usp_update_invitation(1,1);",Done,
+Update job in Job table,handlers,location.js/handler:52,"We update the job record with latitude, longitude 
+and location info","id, latitude, longitude, location",void,usp_update_job,"call usp_update_job(1,1244.3,23324.6,'NYC');",Done,
+Update user in Users table,handlers,location.js/handler:52,"We update the candidate record with latitude, longitude
+and location info","id, latitude, longitude, location",void,usp_update_user,"call usp_update_user(1,1244.3,23324.6,'NYC');",Done,
+Ask a waiting candidate for an interview,appsync,ask-resolver.js/handler,"Here are requirements we should apply to ask a first 
+waiting candidate:
+- getting all relational applications linked 
+with an asking recruiter for passed job ids(We should consider
+the applications with `Waiting`, `Missed` and `Interrupted`
+status as waiting ones.
+- We should get only applications whoes owner 
+candidate is online currently, also candidate's applications 
+related with earlier onlined candidate should have 
+higher priority in the waiting queue
+- We should never consider candidates having interview 
+with other recruiters already. `ReadyForInterview`, 
+`Interview` and `Interviewing` match statuses should be 
+considered as interviewing.
+- We should sort waiting applications by
+ status = `Interrupted` at first, then `Waiting` status
+, and lastly onlineTime of candidate
+- By doing above, we will setup a waiting queue of applications
+ related with this recruiter against specified jobs.
+Then, we should take a first waiting application from this 
+queue and set the status of other applications in the queue
+ to `Missed`.
+- Set the status of chosen candidate to `IsReady`
+- Returns a chosen first waiting application as a result","job_ids, recruiter_id",candidate_to_ask,usp_ask,,,
+Create a career,appsync,createCareer-resolver.js/handler,"Candidate can create a career in a specified career category.
+Create a career if there is no existing career in the specified 
+career category.
+If there is an existing career in the specified career category, 
+We should update that record with new input.","candidate_id, category_id, experience",void,usp_create_career,,,
+Create a job,appsync,createJob-resolver.js/handler,"The recruiter can create a job including a job video.
+If the input param includes `video` or `thumbnail`, we should 
+create a job video before creating a job.
+If creating job video will be failed, we should rollback.
+When the new job is created, it will have a `Draft` status 
+in default.
+If we have created a job video, we should get video id created
+ and set it to new job record.
+If the job creation is failed, we should rollback entire process.","recruiter_id, video, thumbnail, video_title, status,
+ title, description, duration, number_of_positions, 
+... (all attributes we have for a job)",void,usp_create_job,,,
+Create a video,appsync,createVideo-resolver.js/handler,"The process should go by following:
+1. Check if there is an existing video for Job, Recruiter, 
+or Application type. (if the type is `Job`, we should search the 
+video by recruiter_id, type, job_id. else if the type is `Recruiter`, 
+it should search the video by recruiter_id and type. 
+else if the type is `Application`,  it should search by candidate_id, 
+type.
+If there is an existing video already, throw error because we just 
+allowed 1:1 relationship for these types.
+2. Create a new video with the input.
+If is_candidate is true, set candidate_id with user_id, else set 
+recruiter_id with user_id.","candidate_id, recruiter_id, job_id, thumbnail, 
+title, video, type, question",void,usp_create_video,,,
+Create an application,appsync,createApplication-resolver.js/handler,"Create an application into Application table.
+Created new application should have a `Pending` status and 
+readStatus = false in default.
+We should also do a duplication check for the tuple of 
+candidate_id and job_id","candidate_id, job_id, ready, profile_video_id",void,usp_create_application,,,
+Delete a question,handlers,job.js/deleteItem,"Delete a question from Question table, we might do hard or 
+soft delete according to the situation.","id, is_hard",void,usp_delete_question,,,
+Delete an application,handlers,job.js/deleteItem,Delete an application from Application table,"candidate_id, job_id, is_hard",void,usp_delete_application,,,
+Delete an invitation,handlers,job.js/deleteItem,Delete an invitation from Invitation table,"id, is_hard",void,usp_delete_invitation,,,
+"Delete devices with specified 
+token from Device table",utilities,sns-helper.js/createEndpoint:263,"Delete all devices with specified device token from
+Device table",token,void,usp_delete_devices_with_token,,,
+Delete devices with specified token and user_id,utilities,sns-helper.js/unregisterDeviceToken:388,Delete devices with specific token and user id,"token, user_id",void,usp_delete_devices_with_token_user,,,
+"Get all applications related with a specific 
+candidate",appsync,candidate-proposales-resolver.js/handler,"We get all relational applications of a specified candidate.
+When you search the applications, consider 
+only those with readStatus = false.
+We might pass job_id and/or statuses params from client.
+If the job_id is specified, we should get only applications 
+related with that job.
+If statuses param is specified, we should only consider
+the applications with one of those statuses.","candidate_id, job_id, statuses, first, after",*,usp_get_candidate_proposals,,,
+Get applications of a specific job,appsync,job-applications-resolver.js/handler:84,"Fetch all applications by filtering with job_id, statuses, candidate_id, 
+readStatus=false.","job_id, candidate_id, statuses, first, after",*,usp_get_job_applications,,,
+Get candidates of a recruiter,appsync,recruiter-candidates-resolver.js/handler,"1. Search applications related with a recruiter.
+only search applications with status <> `Pending`.
+2. Related candidates first name or lastname should include `query`.","recruiter_id, query",*,usp_get_recruiter_candidates,,,
+Get count aggregation for a candidate,appsync,candidate-count-resolver.js/handler,"Get total and online count of linked recruiters by considering
+statuses of application as we can pass statuses param.
+(Total count is the number of all linked applications by 
+considering statuses and online count is the number 
+of linked applications related with online recruiters among it.)","candidate_id, statuses","total, online",usp_get_candidate_count,,,
+Get count aggregation for a recruiter,appsync,recruiter-count-resolver.js/handler,"Get total and online count of linked candidates by considering
+job_id and statuses of application as we can pass job_id and 
+statuses param.
+(Total count is the number of all linked applications by 
+considering job_id and statuses ,
+and online count is the number 
+of linked applications related with online candidates among it.)","recruiter_id, statuses, job_id","total, online",usp_get_recruiter_count,,,
+Get matched jobs of a candidate,appsync,candidate-jobs-resolver.js/handler,"We were getting matched jobs by considering different criteria.
+
+Here is a work flow we were doing in DDB version:
+1. Get all recruiters associated with industries of candidate
+2. Get careerCategoryId list of this candidate
+3. Get all active status jobs matched with above
+ recruiters & career categories
+4. Eliminate the jobs candidate has applied already from the 
+result.
+5. Eliminate the jobs candidate has disliked already from the 
+result.
+6. Get weight info from Weight table
+7. Calculate matching score for each job in the result
+8. Sort the jobs by matching score calculated above.
+9. Return paginated result","candidate_id, first, after",*,usp_get_candidate_jobs,,,
+Get the applications related with recruiter,appsync,recruiter-applications-resolver.js/handler,"Get applications related with a specific recruiter by statsudes, job_id.","recruiter_id, job_id, statuses, first, after",*,usp_get_recruiter_applications,,,
+Get the jobs of a recruiter,appsync,recruiter-jobs-resolver.js/handler,"Get all related jobs the recruiter posted.
+- search matched with job_id param if its passed
+- job status shouldn't be in either of Expired, Deleted, Filled, or 
+Canceled.
+- search query param by loweredTitle or loweredDescription if it's passed.","recruiter_id, job_id, query, statuses, first, after",*,usp_get_recruiter_jobs,,,
+Get the lead count of a candidate,appsync,candidate-lead-count-resolver.js/handler,"We should get all matched leads by following above logic at 
+first.
+Then, we should get the total number of result leads.(We call 
+matched jobs as leads). This is called `total count`.
+Also, we should get the number of leads whose recruiters 
+are online. This is called `online count`.",candidate_id,"total, online",usp_get_candidate_lead_count,,,
+Get videos of a candidate,appsync,candidate-videos-resolver.js/handler,"Get all related videos of a specific candidate by considering 
+video type and/or video id if they are passed as params.
+If the type param is specified, we should get videos with that 
+specific video type. else, we should get all videos with type 
+begins with `Profile`.","candidate_id, type, video_id",*,usp_get_candidate_videos,,,
+Get videos of the candidate,appsync,candidate-videos-resolver.js/handler:29,"Get all related videos with a specific candidate.
+If type parameter is specified, we should only get videos with 
+those types. Else, we should only get videos type starts with 
+`Profile`.
+If the id param is specified, we should only the video with 
+that id value.","candidate_id, type, video_id",*,usp_get_candidate_videos,,,
+Update a job,appsync,updateJob-resolver.js/handler,"1. Create a new job video if params include video relational fields.
+2. Update a job with input and including created video_id above step.
+If updating job operation is failed, we should roll back entire process.
+This will also remain same for other transactional operactions whenever 
+we will work with multiple entities.","recruiter_id, video, thumbnail, ...",void,usp_update_job,,,
+Update a video,appsync,updateVideo-resolver.js/handler,"Update a video with given params.
+We should set right candidate_id, job_id, recruiter_id according to the 
+video type.","recruiter_id, candidate_id, job_id, type, video,
+thumbnail, title, question, ..",void,usp_update_video,,,
+Get relational applications of a video,appsync,video-applications-resolver.js/handler,"Get the applications related with a profile video.
+This will be called from candidate side.
+So we should filter by candidate_id and profile_video_id attributes from 
+Application table.
+Also, we might filter by statuses of applications.","candidate_id, profile_video_id, statuses,
+first, after",*,usp_get_video_applications,,,
+Get career category of candidate,appsync,subscribe-to-leads-resolver.js/handler,Get career category ids of a candidate,candidate_id,*,usp_get_careers,,,
+Update an application,appsync,updateApplication-resolver.js/handler,Update an application with new input,"candidate_id, job_id, recruiter_id, ...",*,usp_update_application,,,
+Get an application,appsync,send-message-resolver.js/handler,Get an application,"candidate_id, job_id",*,usp_get_application,,,
+Update an user,appsync,updateUser-resolver.js/handler,Update an user with params,"candidate_id, recruiter_id, ...",void,usp_update_user,,,
+Update job in Job table,handlers,job.js/processJob:220,"Update a job with some additional information like 
+title, description, loweredTitle or loweredDescription","id, title, description, lowered_description,
+lowered_title",void,usp_update_job,,,
+Get videos of a recruiter,appsync,recruiter-videos-resolver.js/handler,"Get relational videos of a recruiter. 
+Fetched videos should be unique regarding video attribute.","recruiter_id, first, after",*,,,,

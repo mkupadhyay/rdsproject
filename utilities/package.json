@@ -1,0 +1,16 @@
+{
+  "name": "utilities",
+  "version": "1.0.0",
+  "description": "Utilities for fliphire",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "utilities",
+    "utility",
+    "fliphire"
+  ],
+  "author": "fliphire",
+  "license": "ISC",
+  "dependencies": {}
+}
