@@ -20,7 +20,7 @@
   "author": "fliphire",
   "license": "ISC",
   "dependencies": {
-    "aws-sdk": "^2.473.0",
+    "aws-sdk": "^2.814.0",
     "data-api-client": "^1.0.0-beta",
     "elasticsearch": "^15.2.0",
     "http-aws-es": "^6.0.0",
