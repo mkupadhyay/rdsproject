@@ -19,7 +19,7 @@
     "jimp": "^0.2.28",
     "non-crypto-hash": "^0.1.2",
     "rand-token": "^0.4.0",
-    "serverless": "^1.46.1",
+    "serverless": "^1.83.3",
     "utilities": "file:../../utilities",
     "uuid": "^3.3.2",
     "zipcodes": "^6.1.0"
